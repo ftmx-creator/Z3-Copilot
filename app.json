@@ -43,6 +43,11 @@
           "cameraPermission": "L'application a besoin de l'appareil photo pour scanner les factures."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5a52c56d-e0f1-45e0-a428-7611d60eb0c6"
+      }
+    }
   }
 }

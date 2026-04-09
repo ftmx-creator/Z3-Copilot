@@ -6,7 +6,6 @@
   "build": {
     "development": {
       "node": "22.11.0",
-      "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {

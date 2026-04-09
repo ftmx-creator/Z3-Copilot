@@ -15,7 +15,7 @@ import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { PremiumButton } from '../components/common/PremiumButton';
 import { GlassCard } from '../components/common/GlassCard';
-import { Car, Calendar, Gauge, Euro, User, Shield } from 'lucide-react-native';
+import { Car, Calendar, Gauge, Euro, Shield } from 'lucide-react-native';
 
 export default function OnboardingScreen() {
   const navigation = useNavigation<any>();

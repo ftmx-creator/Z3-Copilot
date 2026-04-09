@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { colors, spacing, typography } from '../theme/colors';
+import { colors, spacing, typography } from '../../theme/colors';
 
 interface PremiumButtonProps {
   title: string;

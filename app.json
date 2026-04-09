@@ -28,9 +28,7 @@
       },
       "package": "com.julfo.z3partner"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
+
     "plugins": [
       [
         "expo-location",

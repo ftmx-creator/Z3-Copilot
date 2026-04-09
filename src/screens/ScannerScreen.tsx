@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Camera, Scan, X, Zap } from 'lucide-react-native';
+import { Scan, X, Zap } from 'lucide-react-native';
 import { colors, spacing, typography } from '../theme/colors';
 import { PremiumButton } from '../components/common/PremiumButton';
 import { GlassCard } from '../components/common/GlassCard';

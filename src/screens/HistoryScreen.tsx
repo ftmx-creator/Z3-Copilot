@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity } from 'react-native';
 import { useVehicleStore, Expense } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';

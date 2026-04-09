@@ -28,8 +28,7 @@
     "react-native-gifted-charts": "^1.4.10",
     "expo-notifications": "~0.28.1",
     "expo-haptics": "~13.0.1",
-    "react-native-svg": "15.2.0",
-    "expo-dev-client": "~4.0.26"
+    "react-native-svg": "15.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

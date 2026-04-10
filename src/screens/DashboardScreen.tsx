@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
@@ -39,46 +39,52 @@ export default function DashboardScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Bonjour, Passionné</Text>
-            <Text style={styles.modelName}>{profile.model} {profile.year}</Text>
+          <View style={styles.headerLeft}>
+            <Image 
+              source={require('../../assets/icon.png')} 
+              style={styles.appIcon} 
+            />
+            <View>
+              <Text style={styles.greeting}>Bonjour, Passionné</Text>
+              <Text style={styles.modelName}>{profile.model} {profile.year}</Text>
+            </View>
           </View>
-          <View style={styles.profileBadge}>
-            <Car color={colors.primary} size={28} />
+          <View style={[styles.statusBadge, { backgroundColor: isHealthy ? colors.success + '20' : colors.warning + '20' }]}>
+            {isHealthy ? <CheckCircle2 size={16} color={colors.success} /> : <AlertTriangle size={16} color={colors.warning} />}
+            <Text style={[styles.statusText, { color: isHealthy ? colors.success : colors.warning }]}>
+              {isHealthy ? 'Optimal' : 'Entretien'}
+            </Text>
           </View>
         </View>
 
         <GlassCard style={styles.mainCard} variant="glass">
-          <View style={styles.statusHeader}>
-            <View style={styles.statusInfo}>
-              <Text style={styles.mileageLabel}>Kilométrage Actuel</Text>
-              <Text style={styles.mileageValue}>{currentMileage.toLocaleString()} km</Text>
-            </View>
-            <View style={[styles.statusBadge, { backgroundColor: isHealthy ? colors.success + '20' : colors.warning + '20' }]}>
-              {isHealthy ? <CheckCircle2 size={18} color={colors.success} /> : <AlertTriangle size={18} color={colors.warning} />}
-              <Text style={[styles.statusText, { color: isHealthy ? colors.success : colors.warning }]}>
-                {isHealthy ? 'État Optimal' : 'Entretien Proche'}
-              </Text>
-            </View>
+          <View style={styles.mileageSection}>
+            <Text style={styles.mileageLabel}>Kilométrage Actuel</Text>
+            <Text style={styles.mileageValue}>{currentMileage.toLocaleString()} km</Text>
           </View>
 
           <View style={styles.divider} />
 
-          <MaintenanceGauge 
-            label="Prochain Oil Service" 
-            currentValue={oilProgress} 
-            maxValue={nextOilKm} 
-          />
-          <MaintenanceGauge 
-            label="Prochaine Inspection I/II" 
-            currentValue={inspProgress} 
-            maxValue={nextInspKm} 
-          />
-          <MaintenanceGauge 
-            label="Circuit de Refroidissement" 
-            currentValue={coolingProgress} 
-            maxValue={nextCoolingKm} 
-          />
+          <View style={styles.gaugesRow}>
+            <MaintenanceGauge 
+              label="Oil Service" 
+              currentValue={oilProgress} 
+              maxValue={nextOilKm}
+              size={90}
+            />
+            <MaintenanceGauge 
+              label="Inspection" 
+              currentValue={inspProgress} 
+              maxValue={nextInspKm}
+              size={90}
+            />
+            <MaintenanceGauge 
+              label="Refroid." 
+              currentValue={coolingProgress} 
+              maxValue={nextCoolingKm}
+              size={90}
+            />
+          </View>
         </GlassCard>
 
         <View style={styles.statsRow}>
@@ -135,35 +141,32 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     marginTop: spacing.md,
   },
-  greeting: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  modelName: {
-    ...typography.h2,
-    color: colors.textPrimary,
-  },
-  profileBadge: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: colors.surfaceHighlight,
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  appIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  greeting: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  modelName: {
+    ...typography.h3,
+    color: colors.textPrimary,
   },
   mainCard: {
     marginBottom: spacing.lg,
   },
-  statusHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  statusInfo: {
-    flex: 1,
+  mileageSection: {
+    alignItems: 'center',
   },
   mileageLabel: {
     ...typography.label,
@@ -183,7 +186,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
@@ -191,6 +194,11 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.border,
     marginVertical: spacing.lg,
+  },
+  gaugesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-start',
   },
   statsRow: {
     flexDirection: 'row',

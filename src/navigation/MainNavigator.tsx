@@ -1,7 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, ClipboardList, ScanLine, BarChart3, Settings } from 'lucide-react-native';
+import { Gauge, Wrench, ScanLine, BarChart3, Settings } from 'lucide-react-native';
+import { View, ActivityIndicator } from 'react-native';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import HistoryScreen from '../screens/HistoryScreen';
@@ -9,11 +10,16 @@ import ScannerScreen from '../screens/ScannerScreen';
 import StatsScreen from '../screens/StatsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import SupportScreen from '../screens/SupportScreen';
 import { colors } from '../theme/colors';
+import { useVehicleStore } from '../store/useVehicleStore';
 
 export type RootStackParamList = {
   Onboarding: undefined;
   MainTabs: undefined;
+  EditProfile: undefined;
+  Support: undefined;
 };
 
 export type TabParamList = {
@@ -51,8 +57,8 @@ function TabNavigator() {
         name="Dashboard" 
         component={DashboardScreen} 
         options={{
-          tabBarLabel: 'Bord',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />
+          tabBarLabel: 'Cockpit',
+          tabBarIcon: ({ color, size }) => <Gauge color={color} size={size} />
         }}
       />
       <Tab.Screen 
@@ -60,7 +66,7 @@ function TabNavigator() {
         component={HistoryScreen} 
         options={{
           tabBarLabel: 'Entretien',
-          tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />
+          tabBarIcon: ({ color, size }) => <Wrench color={color} size={size} />
         }}
       />
       <Tab.Screen 
@@ -92,10 +98,26 @@ function TabNavigator() {
 }
 
 export default function MainNavigator() {
+  const isHydrated = useVehicleStore((state) => state._hasHydrated);
+  const profile = useVehicleStore((state) => state.profile);
+
+  if (!isHydrated) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator 
+      screenOptions={{ headerShown: false }}
+      initialRouteName={profile ? 'MainTabs' : 'Onboarding'}
+    >
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="MainTabs" component={TabNavigator} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="Support" component={SupportScreen} />
     </Stack.Navigator>
   );
 }

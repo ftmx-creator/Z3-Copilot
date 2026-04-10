@@ -1,0 +1,292 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Modal, 
+  TextInput, 
+  TouchableOpacity, 
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
+import { useVehicleStore, Expense } from '../../store/useVehicleStore';
+import { colors, spacing, typography } from '../../theme/colors';
+import { GlassCard } from './GlassCard';
+import { Wrench, Fuel, Sparkles, MoreHorizontal, X, Save, Trash2 } from 'lucide-react-native';
+
+interface ExpenseModalProps {
+  visible: boolean;
+  onClose: () => void;
+  expense?: Expense; // If provided, we are in edit mode
+}
+
+type Category = 'maintenance' | 'fuel' | 'aesthetic' | 'other';
+
+export const ExpenseModal = ({ visible, onClose, expense }: ExpenseModalProps) => {
+  const { addExpense, updateExpense, deleteExpense } = useVehicleStore();
+  
+  const [label, setLabel] = useState('');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState<Category>('maintenance');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    if (expense) {
+      setLabel(expense.label);
+      setAmount(expense.amount.toString());
+      setCategory(expense.category);
+      setDate(expense.date);
+    } else {
+      setLabel('');
+      setAmount('');
+      setCategory('maintenance');
+      setDate(new Date().toISOString().split('T')[0]);
+    }
+  }, [expense, visible]);
+
+  const handleSave = () => {
+    if (!label || !amount) return;
+
+    const expenseData = {
+      label,
+      amount: parseFloat(amount),
+      category,
+      date,
+    };
+
+    if (expense) {
+      updateExpense(expense.id, expenseData);
+    } else {
+      addExpense(expenseData);
+    }
+    onClose();
+  };
+
+  const handleDelete = () => {
+    if (expense) {
+      deleteExpense(expense.id);
+      onClose();
+    }
+  };
+
+  const CategoryOption = ({ id, label, icon: Icon }: { id: Category, label: string, icon: any }) => (
+    <TouchableOpacity 
+      style={[
+        styles.categoryOption, 
+        category === id && styles.categoryOptionActive
+      ]}
+      onPress={() => setCategory(id)}
+    >
+      <Icon size={20} color={category === id ? '#FFF' : colors.textSecondary} />
+      <Text style={[
+        styles.categoryLabel, 
+        category === id && styles.categoryLabelActive
+      ]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
+        >
+          <GlassCard style={styles.modalContent} variant="glass">
+            <View style={styles.header}>
+              <Text style={styles.title}>
+                {expense ? 'Modifier l\'élément' : 'Ajouter un entretien'}
+              </Text>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <X color={colors.textSecondary} size={24} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.form}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Titre / Description</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="ex: Vidange moteur"
+                    placeholderTextColor={colors.textMuted}
+                    value={label}
+                    onChangeText={setLabel}
+                  />
+                </View>
+
+                <View style={styles.row}>
+                  <View style={[styles.inputGroup, { flex: 1, marginRight: spacing.sm }]}>
+                    <Text style={styles.inputLabel}>Montant (€)</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="0.00"
+                      placeholderTextColor={colors.textMuted}
+                      keyboardType="numeric"
+                      value={amount}
+                      onChangeText={setAmount}
+                    />
+                  </View>
+                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                    <Text style={styles.inputLabel}>Date (AAAA-MM-JJ)</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="2024-04-10"
+                      placeholderTextColor={colors.textMuted}
+                      value={date}
+                      onChangeText={setDate}
+                    />
+                  </View>
+                </View>
+
+                <Text style={styles.inputLabel}>Catégorie</Text>
+                <View style={styles.categoryGrid}>
+                  <CategoryOption id="maintenance" label="Réparation" icon={Wrench} />
+                  <CategoryOption id="aesthetic" label="Polish" icon={Sparkles} />
+                  <CategoryOption id="fuel" label="Carburant" icon={Fuel} />
+                  <CategoryOption id="other" label="Autre" icon={MoreHorizontal} />
+                </View>
+
+                <View style={styles.actionRow}>
+                  {expense && (
+                    <TouchableOpacity 
+                      style={[styles.button, styles.deleteButton]} 
+                      onPress={handleDelete}
+                    >
+                      <Trash2 color="#FFF" size={20} />
+                      <Text style={styles.buttonText}>Supprimer</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity 
+                    style={[styles.button, styles.saveButton, !expense && { width: '100%' }]} 
+                    onPress={handleSave}
+                  >
+                    <Save color="#FFF" size={20} />
+                    <Text style={styles.buttonText}>
+                      {expense ? 'Enregistrer' : 'Ajouter'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
+          </GlassCard>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
+  );
+};
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  container: {
+    maxHeight: '90%',
+  },
+  modalContent: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    padding: spacing.xl,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  title: {
+    ...typography.h2,
+    color: colors.textPrimary,
+  },
+  closeButton: {
+    padding: spacing.xs,
+  },
+  form: {
+    gap: spacing.lg,
+  },
+  inputGroup: {
+    marginBottom: spacing.md,
+  },
+  inputLabel: {
+    ...typography.label,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  input: {
+    height: 50,
+    backgroundColor: colors.surfaceHighlight,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    color: colors.textPrimary,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
+  categoryOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceHighlight,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  categoryOptionActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  categoryLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  categoryLabelActive: {
+    color: '#FFF',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.md,
+  },
+  button: {
+    flex: 1,
+    height: 55,
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+  },
+  deleteButton: {
+    backgroundColor: colors.error,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});

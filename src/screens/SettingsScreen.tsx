@@ -1,16 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
 import { MapPin, Bell, LogOut, ChevronRight, User, ShieldCheck, Mail } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/MainNavigator';
 
 export default function SettingsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const profile = useVehicleStore((state) => state.profile);
   const [gpsEnabled, setGpsEnabled] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   if (!profile) return null;
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Déconnexion",
+      "Voulez-vous vraiment vous déconnecter ? Les données locales seront conservées.",
+      [
+        { text: "Annuler", style: "cancel" },
+        { text: "Déconnexion", style: "destructive", onPress: () => navigation.replace('Onboarding') }
+      ]
+    );
+  };
 
   const SettingToggle = ({ label, description, icon: Icon, value, onValueChange }: any) => (
     <GlassCard style={styles.settingCard}>
@@ -33,8 +48,8 @@ export default function SettingsScreen() {
     </GlassCard>
   );
 
-  const MenuLink = ({ label, icon: Icon, color = colors.textPrimary }: any) => (
-    <TouchableOpacity style={styles.menuLink}>
+  const MenuLink = ({ label, icon: Icon, onPress, color = colors.textPrimary }: any) => (
+    <TouchableOpacity style={styles.menuLink} onPress={onPress}>
       <View style={styles.menuLeft}>
         <Icon color={color} size={20} />
         <Text style={[styles.menuLabel, { color }]}>{label}</Text>
@@ -51,8 +66,8 @@ export default function SettingsScreen() {
             <User size={40} color={colors.primary} />
           </View>
           <View>
-            <Text style={styles.userName}>Z3 Driver</Text>
-            <Text style={styles.userEmail}>passion@bmw-z3.com</Text>
+            <Text style={styles.userName}>{profile.model}</Text>
+            <Text style={styles.userEmail}>Passionné BMW Z3</Text>
           </View>
         </View>
 
@@ -74,15 +89,28 @@ export default function SettingsScreen() {
 
         <Text style={styles.sectionTitle}>Véhicule & Compte</Text>
         <GlassCard style={styles.menuContainer}>
-          <MenuLink label="Modifier le profil véhicule" icon={ShieldCheck} />
+          <MenuLink 
+            label="Modifier le profil véhicule" 
+            icon={ShieldCheck} 
+            onPress={() => navigation.navigate('EditProfile')}
+          />
           <View style={styles.divider} />
-          <MenuLink label="Soutien & Support" icon={Mail} />
+          <MenuLink 
+            label="Soutien & Support" 
+            icon={Mail} 
+            onPress={() => navigation.navigate('Support')}
+          />
           <View style={styles.divider} />
-          <MenuLink label="Déconnexion" icon={LogOut} color={colors.error} />
+          <MenuLink 
+            label="Déconnexion" 
+            icon={LogOut} 
+            color={colors.error} 
+            onPress={handleLogout}
+          />
         </GlassCard>
 
         <View style={styles.footer}>
-          <Text style={styles.versionText}>Z3 Partner v1.0.0 (Premium)</Text>
+          <Text style={styles.versionText}>Z3 Partner v1.1.0 (Premium)</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
@@ -8,23 +8,52 @@ import { TrendingUp, Wallet, Banknote, PieChart as PieIcon } from 'lucide-react-
 
 const { width } = Dimensions.get('window');
 
+type FilterType = 'month' | 'year' | 'all';
+
 export default function StatsScreen() {
   const expenses = useVehicleStore((state) => state.expenses);
-  const getTCO = useVehicleStore((state) => state.getTCO);
+  const profile = useVehicleStore((state) => state.profile);
+  const [filter, setFilter] = useState<FilterType>('all');
+
+  const filteredExpenses = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    return expenses.filter(exp => {
+      const expDate = new Date(exp.date);
+      if (filter === 'month') {
+        return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+      }
+      if (filter === 'year') {
+        return expDate.getFullYear() === currentYear;
+      }
+      return true;
+    });
+  }, [expenses, filter]);
+
+  const totalFiltered = useMemo(() => 
+    filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0), 
+  [filteredExpenses]);
 
   // Group by category
-  const data = [
-    { value: expenses.filter(e => e.category === 'maintenance').reduce((s, e) => s + e.amount, 0), color: colors.primary, label: 'Entretien' },
-    { value: expenses.filter(e => e.category === 'fuel').reduce((s, e) => s + e.amount, 0), color: colors.secondary, label: 'Carburant' },
-    { value: expenses.filter(e => e.category === 'insurance').reduce((s, e) => s + e.amount, 0), color: colors.success, label: 'Assurance' },
-    { value: expenses.filter(e => e.category === 'other').reduce((s, e) => s + e.amount, 0), color: colors.accent, label: 'Autre' },
-  ];
+  const data = useMemo(() => [
+    { value: filteredExpenses.filter(e => e.category === 'maintenance').reduce((s, e) => s + e.amount, 0), color: colors.primary, label: 'Réparation' },
+    { value: filteredExpenses.filter(e => e.category === 'aesthetic').reduce((s, e) => s + e.amount, 0), color: colors.success, label: 'Polish' },
+    { value: filteredExpenses.filter(e => e.category === 'fuel').reduce((s, e) => s + e.amount, 0), color: colors.secondary, label: 'Carburant' },
+    { value: filteredExpenses.filter(e => e.category === 'other').reduce((s, e) => s + e.amount, 0), color: colors.accent, label: 'Autre' },
+  ], [filteredExpenses]);
 
-  const pieData = data.map(item => ({
-    value: item.value,
-    color: item.color,
-    text: `${Math.round((item.value / (getTCO() || 1)) * 100)}%`
-  }));
+  const pieData = useMemo(() => {
+    const total = data.reduce((s, i) => s + i.value, 0);
+    return data
+      .filter(item => item.value > 0)
+      .map(item => ({
+        value: item.value,
+        color: item.color,
+        text: `${Math.round((item.value / (total || 1)) * 100)}%`
+      }));
+  }, [data]);
 
   const lineData = [
     { value: 120, label: 'Jan' },
@@ -35,16 +64,29 @@ export default function StatsScreen() {
     { value: 300, label: 'Juin' },
   ];
 
-  const StatSummary = ({ label, value, icon: Icon, color }: any) => (
+  const StatSummary = ({ label, value, icon: Icon, color, isCurrency = true }: any) => (
     <View style={styles.summaryItem}>
       <View style={[styles.summaryIcon, { backgroundColor: color + '20' }]}>
         <Icon color={color} size={20} />
       </View>
       <View>
-        <Text style={styles.summaryValue}>{value.toLocaleString()} €</Text>
+        <Text style={styles.summaryValue}>
+          {isCurrency ? `${value.toLocaleString()} €` : value}
+        </Text>
         <Text style={styles.summaryLabel}>{label}</Text>
       </View>
     </View>
+  );
+
+  const FilterButton = ({ type, label }: { type: FilterType, label: string }) => (
+    <TouchableOpacity 
+      style={[styles.filterBtn, filter === type && styles.filterBtnActive]}
+      onPress={() => setFilter(type)}
+    >
+      <Text style={[styles.filterBtnText, filter === type && styles.filterBtnTextActive]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
   );
 
   return (
@@ -52,75 +94,92 @@ export default function StatsScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Analytique</Text>
 
+        <View style={styles.filterRow}>
+          <FilterButton type="month" label="Mois" />
+          <FilterButton type="year" label="Année" />
+          <FilterButton type="all" label="Tout" />
+        </View>
+
         <GlassCard style={styles.chartCard}>
           <View style={styles.chartHeader}>
             <PieIcon size={20} color={colors.primary} />
             <Text style={styles.chartTitle}>Répartition des Dépenses</Text>
           </View>
-          <View style={styles.pieContainer}>
-            <PieChart
-              data={pieData}
-              donut
-              radius={80}
-              innerRadius={50}
-              innerCircleColor={colors.card}
-              centerLabelComponent={() => (
-                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ ...typography.h3, color: colors.textPrimary }}>Total</Text>
-                  <Text style={{ ...typography.bodySmall, color: colors.textSecondary }}>{(getTCO() - (useVehicleStore.getState().profile?.purchasePrice || 0)).toLocaleString()} €</Text>
-                </View>
-              )}
-            />
-            <View style={styles.legend}>
-              {data.map((item, index) => (
-                <View key={index} style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-                  <Text style={styles.legendText}>{item.label}</Text>
-                </View>
-              ))}
+          
+          {pieData.length > 0 ? (
+            <View style={styles.pieContainer}>
+              <PieChart
+                data={pieData}
+                donut
+                radius={80}
+                innerRadius={50}
+                innerCircleColor={colors.card}
+                centerLabelComponent={() => (
+                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ ...typography.h3, color: colors.textPrimary, fontSize: 16 }}>
+                      {totalFiltered.toLocaleString()}€
+                    </Text>
+                    <Text style={{ ...typography.bodySmall, color: colors.textSecondary, fontSize: 10 }}>Total</Text>
+                  </View>
+                )}
+              />
+              <View style={styles.legend}>
+                {data.filter(i => i.value > 0).map((item, index) => (
+                  <View key={`stat-legend-${index}`} style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                    <Text style={styles.legendText}>{item.label}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Aucune donnée pour cette période</Text>
+            </View>
+          )}
         </GlassCard>
 
-        <GlassCard style={styles.chartCard}>
-          <View style={styles.chartHeader}>
-            <TrendingUp size={20} color={colors.success} />
-            <Text style={styles.chartTitle} >Évolution Mensuelle</Text>
-          </View>
-          <LineChart
-            data={lineData}
-            height={150}
-            width={width - 80}
-            color={colors.primary}
-            thickness={3}
-            startFillColor="rgba(0, 102, 178, 0.3)"
-            endFillColor="rgba(0, 102, 178, 0.01)"
-            startOpacity={0.4}
-            endOpacity={0.1}
-            noOfSections={3}
-            yAxisColor={colors.border}
-            xAxisColor={colors.border}
-            yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }}
-            rulesColor={colors.border}
-            rulesType="solid"
-            hideDataPoints={false}
-            dataPointsColor={colors.primary}
-          />
-        </GlassCard>
+        {filter === 'all' && (
+          <GlassCard style={styles.chartCard}>
+            <View style={styles.chartHeader}>
+              <TrendingUp size={20} color={colors.success} />
+              <Text style={styles.chartTitle}>Évolution Mensuelle</Text>
+            </View>
+            <LineChart
+              data={lineData}
+              height={150}
+              width={width - 80}
+              color={colors.primary}
+              thickness={3}
+              startFillColor="rgba(0, 102, 178, 0.3)"
+              endFillColor="rgba(0, 102, 178, 0.01)"
+              startOpacity={0.4}
+              endOpacity={0.1}
+              noOfSections={3}
+              yAxisColor={colors.border}
+              xAxisColor={colors.border}
+              yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }}
+              rulesColor={colors.border}
+              rulesType="solid"
+              hideDataPoints={false}
+              dataPointsColor={colors.primary}
+            />
+          </GlassCard>
+        )}
 
         <View style={styles.summaryGrid}>
           <GlassCard style={styles.summaryCard}>
             <StatSummary 
-              label="Prix de revient au km" 
-              value={0.45} 
+              label="Budget Moyen / Mois" 
+              value={filter === 'month' ? totalFiltered : Math.round(totalFiltered / (filter === 'year' ? 12 : 24))} 
               icon={Wallet} 
               color={colors.secondary}
             />
           </GlassCard>
           <GlassCard style={styles.summaryCard}>
             <StatSummary 
-              label="Budget Annuel Est." 
-              value={3200} 
+              label="Assurance Annuelle" 
+              value={profile?.insuranceCost || 0} 
               icon={Banknote} 
               color={colors.warning}
             />
@@ -143,7 +202,33 @@ const styles = StyleSheet.create({
   title: {
     ...typography.h1,
     color: colors.textPrimary,
+    marginBottom: spacing.lg,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceHighlight,
+    padding: 4,
+    borderRadius: 12,
     marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  filterBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  filterBtnActive: {
+    backgroundColor: colors.primary,
+  },
+  filterBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  filterBtnTextActive: {
+    color: '#FFF',
   },
   chartCard: {
     marginBottom: spacing.lg,
@@ -180,6 +265,15 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 12,
     color: colors.textSecondary,
+  },
+  emptyContainer: {
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    color: colors.textMuted,
+    fontSize: 14,
   },
   summaryGrid: {
     flexDirection: 'row',

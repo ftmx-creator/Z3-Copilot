@@ -17,7 +17,7 @@ export const colors = {
   textMuted: '#666666',
   
   success: '#10B981',
-  warning: '#F59E0B',
+  warning: '#E63946', // BMW M Red (replaces yellow)
   error: '#EF4444',
   
   // Silver / Chrome

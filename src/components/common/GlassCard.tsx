@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing } from '../../theme/colors';
 
 interface GlassCardProps {
-  children: React.ReactNode;
   style?: ViewStyle;
   variant?: 'surface' | 'glass';
 }
 
-export const GlassCard = ({ children, style, variant = 'surface' }: GlassCardProps) => {
+export const GlassCard = ({ children, style, variant = 'surface' }: PropsWithChildren<GlassCardProps>) => {
   return (
     <View style={[styles.card, variant === 'glass' && styles.glassVariant, style]}>
       <LinearGradient

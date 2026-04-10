@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -24,10 +24,12 @@ interface ExpenseModalProps {
 type Category = 'maintenance' | 'fuel' | 'aesthetic' | 'other';
 
 export const ExpenseModal = ({ visible, onClose, expense }: ExpenseModalProps) => {
-  const { addExpense, updateExpense, deleteExpense } = useVehicleStore();
+  const { addExpense, updateExpense, deleteExpense, profile } = useVehicleStore();
   
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
+  const [liters, setLiters] = useState('');
+  const [mileage, setMileage] = useState('');
   const [category, setCategory] = useState<Category>('maintenance');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -35,24 +37,37 @@ export const ExpenseModal = ({ visible, onClose, expense }: ExpenseModalProps) =
     if (expense) {
       setLabel(expense.label);
       setAmount(expense.amount.toString());
+      setLiters(expense.liters?.toString() || '');
+      setMileage(expense.mileage?.toString() || '');
       setCategory(expense.category);
       setDate(expense.date);
     } else {
       setLabel('');
       setAmount('');
+      setLiters('');
+      setMileage(profile?.mileage?.toString() || '');
       setCategory('maintenance');
       setDate(new Date().toISOString().split('T')[0]);
     }
-  }, [expense, visible]);
+  }, [expense, visible, profile?.mileage]);
+
+  // Auto-fill label for fuel
+  useEffect(() => {
+    if (!expense && category === 'fuel' && !label) {
+      setLabel('Plein de Carburant');
+    }
+  }, [category]);
 
   const handleSave = () => {
     if (!label || !amount) return;
 
     const expenseData = {
       label,
-      amount: parseFloat(amount),
+      amount: parseFloat(amount.replace(',', '.')),
       category,
       date,
+      liters: liters ? parseFloat(liters.replace(',', '.')) : undefined,
+      mileage: mileage ? parseInt(mileage) : undefined,
     };
 
     if (expense) {
@@ -62,6 +77,13 @@ export const ExpenseModal = ({ visible, onClose, expense }: ExpenseModalProps) =
     }
     onClose();
   };
+
+  const pricePerLiter = useMemo(() => {
+    const amt = parseFloat(amount.replace(',', '.'));
+    const ltr = parseFloat(liters.replace(',', '.'));
+    if (amt && ltr && ltr > 0) return (amt / ltr).toFixed(3);
+    return null;
+  }, [amount, liters]);
 
   const handleDelete = () => {
     if (expense) {
@@ -130,7 +152,7 @@ export const ExpenseModal = ({ visible, onClose, expense }: ExpenseModalProps) =
                       style={styles.input}
                       placeholder="0.00"
                       placeholderTextColor={colors.textMuted}
-                      keyboardType="numeric"
+                      keyboardType="decimal-pad"
                       value={amount}
                       onChangeText={setAmount}
                     />
@@ -146,6 +168,41 @@ export const ExpenseModal = ({ visible, onClose, expense }: ExpenseModalProps) =
                     />
                   </View>
                 </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Kilométrage (Compteur)</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="ex: 125000"
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="numeric"
+                    value={mileage}
+                    onChangeText={setMileage}
+                  />
+                </View>
+
+                {category === 'fuel' && (
+                  <View style={styles.row}>
+                    <View style={[styles.inputGroup, { flex: 1, marginRight: spacing.sm }]}>
+                      <Text style={styles.inputLabel}>Volume (Litres)</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="ex: 45.5"
+                        placeholderTextColor={colors.textMuted}
+                        keyboardType="decimal-pad"
+                        value={liters}
+                        onChangeText={setLiters}
+                      />
+                    </View>
+                    <View style={[styles.inputGroup, { flex: 1, justifyContent: 'center', paddingTop: 20 }]}>
+                      {pricePerLiter && (
+                        <Text style={{ color: colors.success, fontWeight: '700' }}>
+                          {pricePerLiter} € / L
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
 
                 <Text style={styles.inputLabel}>Catégorie</Text>
                 <View style={styles.categoryGrid}>

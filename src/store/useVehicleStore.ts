@@ -8,6 +8,8 @@ export interface Expense {
   amount: number;
   date: string;
   label: string;
+  liters?: number;
+  mileage?: number;
 }
 
 export interface VehicleProfile {
@@ -18,6 +20,7 @@ export interface VehicleProfile {
   acquisitionDate: string;
   isCoupé: boolean;
   insuranceCost: number;
+  initialWearKm: Record<string, number>; // Usure enregistrée à l'onboarding
 }
 
 interface VehicleState {
@@ -27,6 +30,7 @@ interface VehicleState {
   setHasHydrated: (state: boolean) => void;
   setProfile: (profile: VehicleProfile) => void;
   updateMileage: (newMileage: number) => void;
+  updateInitialWear: (key: string, km: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   updateExpense: (id: string, updates: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
@@ -46,6 +50,12 @@ export const useVehicleStore = create<VehicleState>()(
 
       updateMileage: (newMileage) => set((state) => ({
         profile: state.profile ? { ...state.profile, mileage: newMileage } : null
+      })),
+
+      updateInitialWear: (key, km) => set((state) => ({
+        profile: state.profile 
+          ? { ...state.profile, initialWearKm: { ...state.profile.initialWearKm, [key]: km } } 
+          : null
       })),
 
       addExpense: (expense) => {

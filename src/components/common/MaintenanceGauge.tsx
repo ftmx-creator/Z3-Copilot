@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { colors, spacing, typography } from '../../theme/colors';
 
@@ -9,6 +8,7 @@ interface MaintenanceGaugeProps {
   maxValue: number;
   unit?: string;
   size?: number;
+  onPress?: () => void;
 }
 
 export const MaintenanceGauge = ({ 
@@ -17,6 +17,7 @@ export const MaintenanceGauge = ({
   maxValue, 
   unit = 'km',
   size = 100,
+  onPress,
 }: MaintenanceGaugeProps) => {
   const percentage = Math.min((currentValue / maxValue) * 100, 100);
   const remaining = maxValue - currentValue;
@@ -36,7 +37,12 @@ export const MaintenanceGauge = ({
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity 
+      style={styles.container} 
+      onPress={onPress} 
+      activeOpacity={onPress ? 0.7 : 1}
+      disabled={!onPress}
+    >
       <View style={styles.gaugeWrapper}>
         <Svg width={size} height={size}>
           {/* Background circle */}
@@ -79,7 +85,7 @@ export const MaintenanceGauge = ({
             : 'Dépassé !'}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

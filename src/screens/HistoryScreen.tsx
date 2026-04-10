@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -11,76 +11,123 @@ import { useVehicleStore, Expense } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
 import { ExpenseModal } from '../components/common/ExpenseModal';
-import { Wrench, Fuel, Sparkles, Plus, MoreHorizontal } from 'lucide-react-native';
+import { Wrench, Fuel, Sparkles, Plus, MoreHorizontal, Clock, ArrowRight } from 'lucide-react-native';
+import { MAINTENANCE_SCHEMA } from '../utils/maintenanceSchema';
+
+type TimelineItem = {
+  id: string;
+  type: 'past' | 'today' | 'future' | 'empty_cta';
+  date: string;
+  label: string;
+  category: string;
+  amount?: number;
+  remainingKm?: number;
+  originalExpense?: Expense;
+};
 
 export default function HistoryScreen() {
   const expenses = useVehicleStore((state) => state.expenses);
+  const profile = useVehicleStore((state) => state.profile);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(undefined);
 
-  const getIcon = (category: string) => {
-    switch (category) {
-      case 'maintenance': return <Wrench size={18} color={colors.primary} />;
-      case 'fuel': return <Fuel size={18} color={colors.secondary} />;
-      case 'aesthetic': return <Sparkles size={18} color={colors.success} />;
-      default: return <MoreHorizontal size={18} color={colors.textSecondary} />;
+  if (!profile) return null;
+
+  const timelineData = useMemo(() => {
+    const now = new Date();
+    const items: TimelineItem[] = [];
+
+    // 1. Ajouter le passé
+    expenses.forEach(exp => {
+      items.push({
+        id: exp.id,
+        type: 'past',
+        date: exp.date,
+        label: exp.label,
+        category: exp.category,
+        amount: exp.amount,
+        originalExpense: exp,
+      });
+    });
+
+    // 2. Ajouter "Aujourd'hui"
+    items.push({
+      id: 'today',
+      type: 'today',
+      date: now.toISOString(),
+      label: 'Aujourd\'hui',
+      category: 'status',
+    });
+
+    // 3. Ajouter le futur
+    const currentMileage = profile.mileage;
+    MAINTENANCE_SCHEMA.forEach(schema => {
+      const initialWear = profile.initialWearKm?.[schema.id] || 0;
+      const effectiveMileage = currentMileage + initialWear;
+      const progress = effectiveMileage % schema.intervalKm;
+      const remainingKm = schema.intervalKm - progress;
+      
+      const daysRemaining = Math.max(0, Math.round(remainingKm / 15));
+      const estimatedDate = new Date();
+      estimatedDate.setDate(now.getDate() + daysRemaining);
+
+      items.push({
+        id: `future-${schema.id}`,
+        type: 'future',
+        date: estimatedDate.toISOString(),
+        label: schema.label,
+        category: 'maintenance',
+        remainingKm,
+      });
+    });
+
+    // Trier : Vieux -> Aujourd'hui -> Futur
+    const sorted = items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // 4. Si pas d'entretiens passés, ajouter un CTA spécial juste avant "Aujourd'hui"
+    if (expenses.length === 0) {
+      const todayIndex = sorted.findIndex(i => i.id === 'today');
+      sorted.splice(todayIndex, 0, {
+        id: 'empty_cta',
+        type: 'empty_cta',
+        date: new Date(now.getTime() - 1000).toISOString(), // Juste avant aujourd'hui
+        label: 'Ajouter mon premier entretien',
+        category: 'action',
+      });
     }
-  };
+
+    return sorted;
+  }, [expenses, profile, profile?.mileage]);
 
   const openAddModal = () => {
     setSelectedExpense(undefined);
     setModalVisible(true);
   };
 
-  const openEditModal = (expense: Expense) => {
-    setSelectedExpense(expense);
-    setModalVisible(true);
+  const openEditModal = (item: TimelineItem) => {
+    if (item.type === 'past' && item.originalExpense) {
+      setSelectedExpense(item.originalExpense);
+      setModalVisible(true);
+    } else if (item.type === 'empty_cta') {
+      openAddModal();
+    }
   };
 
-  const renderItem = ({ item, index }: { item: Expense; index: number }) => {
-    const dateObj = new Date(item.date);
-    const day = dateObj.getDate();
-    const month = dateObj.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase().replace('.', '');
+  const getIcon = (item: TimelineItem) => {
+    if (item.type === 'today') return <Clock size={18} color={colors.primary} />;
+    if (item.type === 'empty_cta') return <Plus size={18} color={colors.primary} />;
     
-    return (
-      <View style={styles.itemWrapper}>
-        <View style={styles.timelineContainer}>
-          <View style={styles.dateBox}>
-            <Text style={styles.dateDay}>{day}</Text>
-            <Text style={styles.dateMonth}>{month}</Text>
-          </View>
-          <View style={[
-            styles.timelineLine, 
-            index === expenses.length - 1 && { backgroundColor: 'transparent' }
-          ]} />
-          <View style={styles.timelineDot} />
-        </View>
-
-        <TouchableOpacity 
-          style={styles.cardContainer} 
-          onPress={() => openEditModal(item)}
-          activeOpacity={0.7}
-        >
-          <GlassCard style={styles.itemCard} variant="glass">
-            <View style={styles.itemHeader}>
-              <View style={[styles.iconBox, { backgroundColor: getCategoryColor(item.category) + '15' }]}>
-                {getIcon(item.category)}
-              </View>
-              <View style={styles.itemContent}>
-                <Text style={styles.itemLabel} numberOfLines={1}>{item.label}</Text>
-                <Text style={styles.itemCategory}>
-                  {getCategoryLabel(item.category)}
-                </Text>
-              </View>
-              <Text style={styles.itemAmount}>{item.amount.toLocaleString()} €</Text>
-            </View>
-          </GlassCard>
-        </TouchableOpacity>
-      </View>
-    );
+    switch (item.category) {
+      case 'maintenance': return <Wrench size={18} color={item.type === 'future' ? colors.textMuted : colors.primary} />;
+      case 'fuel': return <Fuel size={18} color={colors.secondary} />;
+      case 'aesthetic': return <Sparkles size={18} color={colors.success} />;
+      default: return <MoreHorizontal size={18} color={colors.textSecondary} />;
+    }
   };
 
-  const getCategoryColor = (cat: string) => {
+  const getCategoryColor = (cat: string, type: string) => {
+    if (type === 'future') return colors.textMuted;
+    if (type === 'empty_cta') return colors.primary;
     switch (cat) {
       case 'maintenance': return colors.primary;
       case 'fuel': return colors.secondary;
@@ -94,8 +141,96 @@ export default function HistoryScreen() {
       case 'maintenance': return 'Réparation';
       case 'fuel': return 'Carburant';
       case 'aesthetic': return 'Polish';
+      case 'status': return 'Votre Z3';
+      case 'action': return 'Commencer';
       default: return 'Autre';
     }
+  };
+
+  const renderItem = ({ item, index }: { item: TimelineItem; index: number }) => {
+    const isFuture = item.type === 'future';
+    const isToday = item.type === 'today';
+    const isEmptyCta = item.type === 'empty_cta';
+
+    const dateObj = new Date(item.date);
+    const day = dateObj.getDate();
+    const month = dateObj.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase().replace('.', '');
+    
+    return (
+      <View style={[styles.itemWrapper, isToday && styles.todayWrapper]}>
+        <View style={styles.timelineContainer}>
+          <View style={[
+            styles.dateBox, 
+            isFuture && styles.futureDateBox, 
+            isToday && styles.todayBox,
+            isEmptyCta && styles.emptyCtaBox
+          ]}>
+            <Text style={[
+              styles.dateDay, 
+              isFuture && styles.futureText, 
+              (isToday || isEmptyCta) && {color: '#FFF'}
+            ]}>
+              {isEmptyCta ? '?' : day}
+            </Text>
+            <Text style={[
+              styles.dateMonth, 
+              isFuture && styles.futureText, 
+              (isToday || isEmptyCta) && {color: '#FFF'}
+            ]}>
+              {isEmptyCta ? 'NEW' : month}
+            </Text>
+          </View>
+          <View style={[
+            styles.timelineLine, 
+            index === timelineData.length - 1 && { backgroundColor: 'transparent' }
+          ]} />
+        </View>
+
+        <TouchableOpacity 
+          style={styles.cardContainer} 
+          onPress={() => openEditModal(item)}
+          disabled={!item.originalExpense && !isEmptyCta}
+          activeOpacity={0.7}
+        >
+          <GlassCard 
+            style={StyleSheet.flatten([
+              styles.itemCard, 
+              isFuture && styles.futureCard, 
+              isToday && styles.todayCard,
+              isEmptyCta && styles.emptyCtaCard
+            ])} 
+            variant={isToday || isEmptyCta ? 'surface' : 'glass'}
+          >
+            <View style={styles.itemHeader}>
+              <View style={[
+                styles.iconBox, 
+                { backgroundColor: getCategoryColor(item.category, item.type) + (isFuture ? '10' : '15') }
+              ]}>
+                {getIcon(item)}
+              </View>
+              <View style={styles.itemContent}>
+                <Text style={[
+                  styles.itemLabel, 
+                  isFuture && styles.futureText, 
+                  (isToday || isEmptyCta) && {color: '#FFF'}
+                ]} numberOfLines={1}>
+                  {item.label}
+                </Text>
+                <Text style={[styles.itemCategory, isFuture && styles.futureText]}>
+                  {isFuture ? `Dans ${item.remainingKm?.toLocaleString()} km` : getCategoryLabel(item.category)}
+                </Text>
+              </View>
+              {item.amount && (
+                <Text style={styles.itemAmount}>{item.amount.toLocaleString()} €</Text>
+              )}
+              {(isFuture || isEmptyCta) && (
+                <ArrowRight size={16} color={isToday || isEmptyCta ? '#FFF' : colors.textMuted} />
+              )}
+            </View>
+          </GlassCard>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   return (
@@ -103,7 +238,7 @@ export default function HistoryScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Entretien</Text>
-          <Text style={styles.subtitle}>Historique de votre Roadster</Text>
+          <Text style={styles.subtitle}>Passé & Futur de votre Z3</Text>
         </View>
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <Plus color="#FFF" size={28} />
@@ -111,19 +246,18 @@ export default function HistoryScreen() {
       </View>
 
       <FlatList
-        data={expenses}
+        data={timelineData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>Aucun historique enregistré</Text>
-            <TouchableOpacity style={styles.emptyButton} onPress={openAddModal}>
-              <Text style={styles.emptyButtonText}>Ajouter mon premier entretien</Text>
-            </TouchableOpacity>
-          </View>
-        }
+        initialScrollIndex={Math.max(0, timelineData.findIndex(i => i.id === 'today'))}
+        getItemLayout={(_, index) => ({
+          length: 100,
+          offset: 100 * index,
+          index,
+        })}
+        onScrollToIndexFailed={() => {}}
       />
 
       <ExpenseModal 
@@ -178,6 +312,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     minHeight: 100,
   },
+  todayWrapper: {
+    marginVertical: spacing.md,
+  },
   timelineContainer: {
     width: 60,
     alignItems: 'center',
@@ -194,6 +331,19 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     zIndex: 2,
   },
+  futureDateBox: {
+    opacity: 0.5,
+    borderStyle: 'dashed',
+  },
+  todayBox: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  emptyCtaBox: {
+    backgroundColor: colors.secondary,
+    borderColor: colors.secondary,
+    borderStyle: 'dashed',
+  },
   dateDay: {
     fontSize: 18,
     fontWeight: '800',
@@ -206,6 +356,9 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginTop: 2,
   },
+  futureText: {
+    color: colors.textMuted,
+  },
   timelineLine: {
     position: 'absolute',
     top: 50,
@@ -214,17 +367,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     zIndex: 1,
   },
-  timelineDot: {
-    position: 'absolute',
-    top: 25,
-    left: 55, // Center line
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.primary,
-    zIndex: 3,
-    display: 'none', // Removed for cleaner look with dateBox
-  },
   cardContainer: {
     flex: 1,
     paddingBottom: spacing.md,
@@ -232,6 +374,21 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     padding: spacing.md,
+  },
+  futureCard: {
+    opacity: 0.7,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  todayCard: {
+    backgroundColor: 'rgba(230, 57, 70, 0.1)',
+    borderColor: colors.primary,
+    borderWidth: 1,
+  },
+  emptyCtaCard: {
+    backgroundColor: 'rgba(69, 123, 157, 0.1)',
+    borderColor: colors.secondary,
+    borderWidth: 1,
+    borderStyle: 'dashed',
   },
   itemHeader: {
     flexDirection: 'row',
@@ -262,26 +419,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: colors.textPrimary,
-  },
-  empty: {
-    alignItems: 'center',
-    marginTop: 100,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.xl,
-  },
-  emptyButton: {
-    backgroundColor: colors.surfaceHighlight,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  emptyButtonText: {
-    color: colors.primary,
-    fontWeight: 'bold',
   },
 });

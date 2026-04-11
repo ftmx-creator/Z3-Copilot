@@ -11,6 +11,7 @@ import { MAINTENANCE_SCHEMA } from '../utils/maintenanceSchema';
 
 import * as Notifications from 'expo-notifications';
 import { MileageModal } from '../components/common/MileageModal';
+import { ExpenseModal } from '../components/common/ExpenseModal';
 
 export default function DashboardScreen() {
   const navigation = useNavigation<any>();
@@ -20,6 +21,8 @@ export default function DashboardScreen() {
 
   const [mileageModalVisible, setMileageModalVisible] = React.useState(false);
   const [suggestedKms, setSuggestedKms] = React.useState(0);
+  const [expenseModalVisible, setExpenseModalVisible] = React.useState(false);
+  const [preSelectedCategory, setPreSelectedCategory] = React.useState<'maintenance' | 'fuel' | 'aesthetic' | 'other'>('maintenance');
 
   React.useEffect(() => {
     // Écouteur pour les clics sur les notifications
@@ -29,6 +32,9 @@ export default function DashboardScreen() {
       if (data.type === 'mileage_update') {
         setSuggestedKms(data.suggestedKms || 0);
         setMileageModalVisible(true);
+      } else if (data.type === 'fuel_add') {
+        setPreSelectedCategory('fuel');
+        setExpenseModalVisible(true);
       }
     });
 
@@ -110,18 +116,11 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.heroSection}>
-          <Image 
-            source={require('../../assets/z3_hero.png')} 
-            style={styles.heroImage}
-            resizeMode="contain"
-          />
-          <View style={styles.badgeContainer}>
-            <Text style={styles.chromeBadge}>Z3</Text>
-          </View>
-        </View>
+      <View style={styles.fixedHeader}>
+        <Text style={styles.appTitle}>Z3 <Text style={styles.appTitleLight}>Partner</Text></Text>
+      </View>
 
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Bonjour, Passionné</Text>
@@ -160,8 +159,8 @@ export default function DashboardScreen() {
           </View>
         </GlassCard>
 
-        <View style={styles.statsRow}>
-          <GlassCard style={styles.halfCard}>
+        <View style={styles.statsContainer}>
+          <GlassCard style={styles.listCard}>
             <StatItem 
               label="Carburant" 
               value={`${expenses.filter(e => e.category === 'fuel').length} Pleins`} 
@@ -170,7 +169,8 @@ export default function DashboardScreen() {
               color={colors.secondary}
             />
           </GlassCard>
-          <GlassCard style={styles.halfCard}>
+          
+          <GlassCard style={styles.listCard}>
             <StatItem 
               label="Assurance" 
               value={`${profile.insuranceCost.toLocaleString()} € / an`} 
@@ -202,6 +202,12 @@ export default function DashboardScreen() {
         onClose={() => setMileageModalVisible(false)} 
         suggestedKms={suggestedKms} 
       />
+
+      <ExpenseModal 
+        visible={expenseModalVisible} 
+        onClose={() => setExpenseModalVisible(false)} 
+        initialCategory={preSelectedCategory}
+      />
     </SafeAreaView>
   );
 }
@@ -214,44 +220,28 @@ const styles = StyleSheet.create({
   scroll: {
     padding: spacing.lg,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-    marginTop: -spacing.md,
+  fixedHeader: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.background,
   },
-  heroImage: {
-    width: '100%',
-    height: 180,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-  },
-  badgeContainer: {
-    marginTop: -40,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 20,
-    paddingVertical: 5,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  chromeBadge: {
-    fontSize: 48,
+  appTitle: {
+    fontSize: 28,
     fontWeight: '900',
-    color: '#E0E0E0',
-    fontStyle: 'italic',
-    letterSpacing: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 3,
+    color: colors.textPrimary,
+    letterSpacing: -1,
+  },
+  appTitleLight: {
+    fontWeight: '300',
+    color: colors.primary,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.xl,
+    paddingTop: spacing.sm,
   },
   greeting: {
     ...typography.bodySmall,
@@ -301,31 +291,34 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: spacing.md,
   },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  statsContainer: {
     gap: spacing.md,
     marginBottom: spacing.lg,
   },
-  halfCard: {
-    flex: 1,
-    padding: 20,
+  listCard: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    justifyContent: 'space-between',
+    gap: spacing.md,
   },
   statContent: {
     flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 14,
+    fontWeight: '500',
     color: colors.textSecondary,
   },
   statValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.textPrimary,
   },
   tcoCardContainer: {

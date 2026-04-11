@@ -139,47 +139,45 @@ export default function StatsScreen() {
           )}
         </GlassCard>
 
-        {filter === 'all' && (
-          <GlassCard style={styles.chartCard}>
-            <View style={styles.chartHeader}>
-              <TrendingUp size={20} color={colors.success} />
-              <Text style={styles.chartTitle}>Évolution Mensuelle</Text>
-            </View>
-            <LineChart
-              data={lineData}
-              height={150}
-              width={width - 80}
-              color={colors.primary}
-              thickness={3}
-              startFillColor="rgba(0, 102, 178, 0.3)"
-              endFillColor="rgba(0, 102, 178, 0.01)"
-              startOpacity={0.4}
-              endOpacity={0.1}
-              noOfSections={3}
-              yAxisColor={colors.border}
-              xAxisColor={colors.border}
-              yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }}
-              rulesColor={colors.border}
-              rulesType="solid"
-              hideDataPoints={false}
-              dataPointsColor={colors.primary}
-            />
-          </GlassCard>
-        )}
+        <GlassCard style={styles.chartCard}>
+          <View style={styles.chartHeader}>
+            <TrendingUp size={20} color={colors.success} />
+            <Text style={styles.chartTitle}>Évolution</Text>
+          </View>
+          <LineChart
+            data={lineData}
+            height={150}
+            width={width - 80}
+            color={colors.primary}
+            thickness={3}
+            startFillColor="rgba(0, 102, 178, 0.3)"
+            endFillColor="rgba(0, 102, 178, 0.01)"
+            startOpacity={0.4}
+            endOpacity={0.1}
+            noOfSections={3}
+            yAxisColor={colors.border}
+            xAxisColor={colors.border}
+            yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }}
+            rulesColor={colors.border}
+            rulesType="solid"
+            hideDataPoints={false}
+            dataPointsColor={colors.primary}
+          />
+        </GlassCard>
 
         <View style={styles.summaryGrid}>
           <GlassCard style={styles.summaryCard}>
             <StatSummary 
-              label="Budget Moyen / Mois" 
-              value={filter === 'month' ? totalFiltered : Math.round(totalFiltered / (filter === 'year' ? 12 : 24))} 
+              label={filter === 'year' ? "Budget Moyen / An" : "Budget Moyen / Mois"} 
+              value={filter === 'year' ? totalFiltered : Math.round(totalFiltered / 12)} 
               icon={Wallet} 
               color={colors.secondary}
             />
           </GlassCard>
           <GlassCard style={styles.summaryCard}>
             <StatSummary 
-              label="Assurance Annuelle" 
-              value={profile?.insuranceCost || 0} 
+              label={filter === 'year' ? "Assurance / An" : "Assurance / Mois"} 
+              value={filter === 'year' ? (profile?.insuranceCost || 0) : Math.round((profile?.insuranceCost || 0) / 12)} 
               icon={Banknote} 
               color={colors.warning}
             />
@@ -277,33 +275,35 @@ const styles = StyleSheet.create({
   },
   summaryGrid: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
     marginBottom: spacing.xxl,
   },
   summaryCard: {
     flex: 1,
-    padding: spacing.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.md,
   },
   summaryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 6,
   },
   summaryIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   summaryValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: colors.textPrimary,
   },
   summaryLabel: {
-    fontSize: 10,
+    fontSize: 9,
+    fontWeight: '600',
     color: colors.textSecondary,
-    textTransform: 'uppercase',
+    marginTop: 2,
   },
 });

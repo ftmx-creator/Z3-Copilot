@@ -4,12 +4,10 @@ import {
   Text, 
   StyleSheet, 
   SafeAreaView, 
-  TextInput, 
   ScrollView, 
   KeyboardAvoidingView, 
   Platform,
-  TouchableOpacity,
-  Switch
+  TouchableOpacity
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useVehicleStore } from '../store/useVehicleStore';
@@ -17,25 +15,10 @@ import { colors, spacing, typography } from '../theme/colors';
 import { PremiumButton } from '../components/common/PremiumButton';
 import { GlassCard } from '../components/common/GlassCard';
 import { GlassPicker } from '../components/common/GlassPicker';
-import { Car, Calendar, Gauge, Euro, Shield, Disc, Thermometer, Zap, ChevronRight, ChevronLeft } from 'lucide-react-native';
-
-const Z3_MODELS = [
-  'Roadster 1.8 (115ch)',
-  'Roadster 1.9 (140ch)',
-  'Roadster 1.9i (118ch)',
-  'Roadster 2.0 (150ch)',
-  'Roadster 2.2i (170ch)',
-  'Roadster 2.8 (192ch)',
-  'Roadster 3.0i (231ch)',
-  'M Roadster (S50 - 321ch)',
-  'M Roadster (S54 - 325ch)',
-  'Coupé 2.8 (192ch)',
-  'Coupé 3.0i (231ch)',
-  'M Coupé (S50 - 321ch)',
-  'M Coupé (S54 - 325ch)',
-];
-
-const Z3_YEARS = ['1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002'];
+import { InputField } from '../components/common/InputField';
+import { WearItem } from '../components/common/WearItem';
+import { Z3_MODELS, Z3_YEARS } from '../constants/vehicleData';
+import { Car, Calendar, Gauge, Euro, Shield, Disc, Thermometer, Zap, ChevronLeft } from 'lucide-react-native';
 
 export default function OnboardingScreen() {
   const navigation = useNavigation<any>();
@@ -62,10 +45,8 @@ export default function OnboardingScreen() {
   const handleBack = () => setStep(1);
 
   const handleStart = () => {
-    if (!form.model || !form.year) {
-      // Basic validation
-      return;
-    }
+    if (!form.model || !form.year) return;
+
     const initialWearKm: Record<string, number> = {};
     Object.keys(wear).forEach(key => {
       initialWearKm[key] = wear[key].isNew ? 0 : (parseInt(wear[key].km) || 0);
@@ -84,62 +65,13 @@ export default function OnboardingScreen() {
     navigation.replace('MainTabs');
   };
 
-  const InputField = ({ label, value, onChange, icon: Icon, placeholder, keyboardType = 'default' }: any) => (
-    <View style={styles.inputContainer}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputWrapper}>
-        <Icon size={20} color={colors.primary} style={styles.inputIcon} />
-        <TextInput
-          style={styles.input}
-          value={value}
-          onChangeText={onChange}
-          placeholder={placeholder}
-          placeholderTextColor={colors.textMuted}
-          keyboardType={keyboardType as any}
-        />
-      </View>
-    </View>
-  );
-
-  const WearItem = ({ id, label, icon: Icon }: any) => (
-    <View style={styles.wearItem}>
-      <View style={styles.wearHeader}>
-        <View style={styles.wearLabelGroup}>
-          <Icon size={20} color={colors.textPrimary} />
-          <Text style={styles.wearLabel}>{label}</Text>
-        </View>
-        <View style={styles.switchGroup}>
-          <Text style={[styles.switchLabel, wear[id].isNew && { color: colors.success }]}>Neuf</Text>
-          <Switch 
-            value={!wear[id].isNew} 
-            onValueChange={(val) => setWear({ ...wear, [id]: { ...wear[id], isNew: !val }})}
-            trackColor={{ false: colors.border, true: colors.primary }}
-          />
-        </View>
-      </View>
-      {!wear[id].isNew && (
-        <View style={styles.wearInputWrapper}>
-          <Text style={styles.wearSubLabel}>Kilomètres parcourus depuis changement :</Text>
-          <TextInput
-            style={styles.wearInput}
-            value={wear[id].km}
-            onChangeText={(t) => setWear({ ...wear, [id]: { ...wear[id], km: t }})}
-            keyboardType="numeric"
-            placeholder="ex: 5000"
-            placeholderTextColor={colors.textMuted}
-          />
-        </View>
-      )}
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <Car size={64} color={colors.primary} />
             <Text style={styles.title}>Z3 Partner</Text>
@@ -205,13 +137,13 @@ export default function OnboardingScreen() {
                 Précisez l'état actuel de vos consommables pour des prédictions précises.
               </Text>
               <GlassCard style={styles.formCard}>
-                <WearItem id="tires" label="Pneus" icon={Disc} />
+                <WearItem id="tires" label="Pneus" icon={Disc} wear={wear} setWear={setWear} />
                 <View style={styles.divider} />
-                <WearItem id="brakes" label="Freins" icon={Disc} />
+                <WearItem id="brakes" label="Freins" icon={Disc} wear={wear} setWear={setWear} />
                 <View style={styles.divider} />
-                <WearItem id="cooling" label="Refroidissement" icon={Thermometer} />
+                <WearItem id="cooling" label="Refroidissement" icon={Thermometer} wear={wear} setWear={setWear} />
                 <View style={styles.divider} />
-                <WearItem id="spark_plugs" label="Bougies" icon={Zap} />
+                <WearItem id="spark_plugs" label="Bougies" icon={Zap} wear={wear} setWear={setWear} />
               </GlassCard>
 
               <View style={styles.buttonRow}>
@@ -220,7 +152,7 @@ export default function OnboardingScreen() {
                   <Text style={styles.backText}>Retour</Text>
                 </TouchableOpacity>
                 <PremiumButton 
-                  title="Démarrer l'Aventure" 
+                  title="Enregistrer" 
                   onPress={handleStart} 
                   style={styles.flexButton}
                 />
@@ -267,32 +199,6 @@ const styles = StyleSheet.create({
   formCard: {
     marginBottom: spacing.xl,
   },
-  inputContainer: {
-    marginBottom: spacing.lg,
-  },
-  label: {
-    ...typography.label,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceHighlight,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    height: 50,
-    paddingHorizontal: spacing.md,
-  },
-  inputIcon: {
-    marginRight: spacing.sm,
-  },
-  input: {
-    flex: 1,
-    color: colors.textPrimary,
-    fontSize: 16,
-  },
   button: {
     marginTop: spacing.md,
   },
@@ -312,56 +218,6 @@ const styles = StyleSheet.create({
   backText: {
     color: colors.textSecondary,
     fontWeight: '600',
-  },
-  wearItem: {
-    paddingVertical: spacing.md,
-  },
-  wearHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  wearLabelGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  wearLabel: {
-    ...typography.h3,
-    fontSize: 16,
-    color: colors.textPrimary,
-  },
-  switchGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  switchLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-  },
-  wearInputWrapper: {
-    marginTop: spacing.md,
-    backgroundColor: colors.surfaceHighlight,
-    padding: spacing.md,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  wearSubLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  wearInput: {
-    height: 40,
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.primary,
   },
   divider: {
     height: 1,

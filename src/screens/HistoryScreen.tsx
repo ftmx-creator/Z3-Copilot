@@ -91,7 +91,7 @@ export default function HistoryScreen() {
         id: 'empty_cta',
         type: 'empty_cta',
         date: new Date(now.getTime() - 1000).toISOString(), // Juste avant aujourd'hui
-        label: 'Ajouter mon premier entretien',
+        label: 'Ajouter',
         category: 'action',
       });
     }
@@ -234,38 +234,39 @@ export default function HistoryScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Entretien</Text>
-          <Text style={styles.subtitle}>Passé & Futur de votre Z3</Text>
+    <>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>Entretien</Text>
+            <Text style={styles.subtitle}>Passé & Futur de votre Z3</Text>
+          </View>
+          <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+            <Plus color="#FFF" size={28} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Plus color="#FFF" size={28} />
-        </TouchableOpacity>
-      </View>
 
-      <FlatList
-        data={timelineData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        initialScrollIndex={Math.max(0, timelineData.findIndex(i => i.id === 'today'))}
-        getItemLayout={(_, index) => ({
-          length: 100,
-          offset: 100 * index,
-          index,
-        })}
-        onScrollToIndexFailed={() => {}}
-      />
-
+        <FlatList
+          data={timelineData}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          initialScrollIndex={Math.max(0, timelineData.findIndex(i => i.id === 'today'))}
+          getItemLayout={(_, index) => ({
+            length: 100,
+            offset: 100 * index,
+            index,
+          })}
+          onScrollToIndexFailed={() => {}}
+        />
+      </SafeAreaView>
       <ExpenseModal 
         visible={modalVisible} 
         onClose={() => setModalVisible(false)} 
         expense={selectedExpense}
       />
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -383,6 +384,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(230, 57, 70, 0.1)',
     borderColor: colors.primary,
     borderWidth: 1,
+    borderStyle: 'solid',
   },
   emptyCtaCard: {
     backgroundColor: 'rgba(69, 123, 157, 0.1)',

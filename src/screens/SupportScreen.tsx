@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -6,18 +6,35 @@ import {
   SafeAreaView, 
   ScrollView, 
   TouchableOpacity, 
-  Linking 
+  Linking,
+  TextInput,
+  Alert
 } from 'react-native';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
-import { ChevronLeft, Mail, ExternalLink, HelpCircle, Heart } from 'lucide-react-native';
+import { PremiumButton } from '../components/common/PremiumButton';
+import { ChevronLeft, Mail, ExternalLink, HelpCircle, Heart, Send } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 export default function SupportScreen() {
   const navigation = useNavigation();
+  const [message, setMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
-  const handleContact = () => {
-    Linking.openURL('mailto:fortumaxx@gmail.com?subject=Z3 Partner Support');
+  const handleSend = () => {
+    if (!message.trim()) return;
+    
+    setIsSending(true);
+    // Simulation d'envoi
+    setTimeout(() => {
+      setIsSending(false);
+      setMessage('');
+      Alert.alert(
+        "Message envoyé",
+        "Merci pour votre message ! Notre équipe technique vous répondra dans les plus brefs délais.",
+        [{ text: "OK" }]
+      );
+    }, 1500);
   };
 
   const handleLink = (url: string) => {
@@ -41,21 +58,26 @@ export default function SupportScreen() {
         <View style={{ width: 28 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionTitle}>Contact</Text>
-        <TouchableOpacity onPress={handleContact}>
-          <GlassCard style={styles.contactCard} variant="glass">
-            <View style={styles.contactContent}>
-              <View style={styles.iconBox}>
-                <Mail color={colors.primary} size={24} />
-              </View>
-              <View style={styles.contactText}>
-                <Text style={styles.contactLabel}>Envoyer un email</Text>
-                <Text style={styles.contactEmail}>fortumaxx@gmail.com</Text>
-              </View>
-            </View>
-          </GlassCard>
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <Text style={styles.sectionTitle}>Envoyer un message</Text>
+        <GlassCard style={styles.formCard}>
+          <TextInput
+            style={styles.input}
+            placeholder="Comment pouvons-nous vous aider ?"
+            placeholderTextColor={colors.textMuted}
+            multiline
+            numberOfLines={4}
+            value={message}
+            onChangeText={setMessage}
+            textAlignVertical="top"
+          />
+          <PremiumButton 
+            title={isSending ? "Envoi en cours..." : "Envoyer"} 
+            onPress={handleSend}
+            icon={isSending ? undefined : Send}
+            style={styles.sendButton}
+          />
+        </GlassCard>
 
         <Text style={styles.sectionTitle}>Questions Fréquentes</Text>
         <GlassCard style={styles.faqCard}>
@@ -227,5 +249,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 4,
+  },
+  formCard: {
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  input: {
+    minHeight: 120,
+    backgroundColor: colors.surfaceHighlight,
+    borderRadius: 12,
+    padding: spacing.md,
+    color: colors.textPrimary,
+    fontSize: 15,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
+  },
+  sendButton: {
+    height: 50,
   },
 });

@@ -15,15 +15,16 @@ import { colors, spacing, typography } from '../../theme/colors';
 import { GlassCard } from './GlassCard';
 import { Wrench, Fuel, Sparkles, MoreHorizontal, X, Save, Trash2 } from 'lucide-react-native';
 
+type Category = 'maintenance' | 'fuel' | 'aesthetic' | 'other';
+
 interface ExpenseModalProps {
   visible: boolean;
   onClose: () => void;
   expense?: Expense; // If provided, we are in edit mode
+  initialCategory?: Category;
 }
 
-type Category = 'maintenance' | 'fuel' | 'aesthetic' | 'other';
-
-export const ExpenseModal = ({ visible, onClose, expense }: ExpenseModalProps) => {
+export const ExpenseModal = ({ visible, onClose, expense, initialCategory }: ExpenseModalProps) => {
   const { addExpense, updateExpense, deleteExpense, profile } = useVehicleStore();
   
   const [label, setLabel] = useState('');
@@ -46,10 +47,10 @@ export const ExpenseModal = ({ visible, onClose, expense }: ExpenseModalProps) =
       setAmount('');
       setLiters('');
       setMileage(profile?.mileage?.toString() || '');
-      setCategory('maintenance');
+      setCategory(initialCategory || 'maintenance');
       setDate(new Date().toISOString().split('T')[0]);
     }
-  }, [expense, visible, profile?.mileage]);
+  }, [expense, visible, profile?.mileage, initialCategory]);
 
   // Auto-fill label for fuel
   useEffect(() => {

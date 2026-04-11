@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, typography } from '../../theme/colors';
@@ -10,9 +10,10 @@ interface PremiumButtonProps {
   variant?: 'primary' | 'secondary' | 'outline';
   style?: ViewStyle;
   textStyle?: TextStyle;
+  icon?: any;
 }
 
-export const PremiumButton = ({ title, onPress, variant = 'primary', style, textStyle }: PremiumButtonProps) => {
+export const PremiumButton = ({ title, onPress, variant = 'primary', style, textStyle, icon: Icon }: PremiumButtonProps) => {
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress();
@@ -33,7 +34,10 @@ export const PremiumButton = ({ title, onPress, variant = 'primary', style, text
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <Text style={[styles.text, isOutline && styles.outlineText, textStyle]}>{title}</Text>
+        <View style={styles.content}>
+          {Icon && <Icon size={20} color={colors.textPrimary} style={styles.icon} />}
+          <Text style={[styles.text, isOutline && styles.outlineText, textStyle]}>{title}</Text>
+        </View>
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -55,6 +59,15 @@ const styles = StyleSheet.create({
   text: {
     ...typography.h3,
     color: colors.textPrimary,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  icon: {
+    marginRight: spacing.xs,
   },
   outlineButton: {
     borderWidth: 1.5,

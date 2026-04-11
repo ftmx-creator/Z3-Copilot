@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Gauge, Wrench, ScanLine, BarChart3, Settings } from 'lucide-react-native';
+import { Gauge, Wrench, ScanLine, Timer, Settings } from 'lucide-react-native';
 import { View, ActivityIndicator } from 'react-native';
 
 import DashboardScreen from '../screens/DashboardScreen';
@@ -82,7 +82,7 @@ function TabNavigator() {
         component={StatsScreen} 
         options={{
           tabBarLabel: 'Stats',
-          tabBarIcon: ({ color, size }) => <BarChart3 color={color} size={size} />
+          tabBarIcon: ({ color, size }) => <Timer color={color} size={size} />
         }}
       />
       <Tab.Screen 

@@ -4,40 +4,67 @@ import {
   Text, 
   StyleSheet, 
   SafeAreaView, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform
+  ScrollView, 
+  KeyboardAvoidingView, 
+  Platform,
+  TouchableOpacity
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
+import { PremiumButton } from '../components/common/PremiumButton';
 import { GlassCard } from '../components/common/GlassCard';
-import { ChevronLeft, Save } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { GlassPicker } from '../components/common/GlassPicker';
+import { InputField } from '../components/common/InputField';
+import { WearItem } from '../components/common/WearItem';
+import { Z3_MODELS, Z3_YEARS } from '../constants/vehicleData';
+import { ChevronLeft, Disc, Thermometer, Zap, Car, Calendar, Gauge, Euro, Shield } from 'lucide-react-native';
 
 export default function EditProfileScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { profile, setProfile } = useVehicleStore();
+  const [step, setStep] = useState(1);
 
-  const [model, setModel] = useState(profile?.model || '');
-  const [year, setYear] = useState(profile?.year || '');
-  const [mileage, setMileage] = useState(profile?.mileage.toString() || '');
-  const [purchasePrice, setPurchasePrice] = useState(profile?.purchasePrice.toString() || '');
-  const [insuranceCost, setInsuranceCost] = useState(profile?.insuranceCost.toString() || '');
+  if (!profile) return null;
+
+  const [form, setForm] = useState({
+    model: profile.model,
+    year: profile.year,
+    get mileage() { return profile.mileage.toString() },
+    price: profile.purchasePrice.toString(),
+    insurance: profile.insuranceCost.toString(),
+    acquisitionDate: profile.acquisitionDate,
+  });
+
+  const [mileage, setMileage] = useState(profile.mileage.toString());
+
+  const [wear, setWear] = useState<Record<string, { isNew: boolean, km: string }>>({
+    tires: { isNew: profile.initialWearKm.tires === 0, km: profile.initialWearKm.tires.toString() },
+    brakes: { isNew: profile.initialWearKm.brakes === 0, km: profile.initialWearKm.brakes.toString() },
+    cooling: { isNew: profile.initialWearKm.cooling === 0, km: profile.initialWearKm.cooling.toString() },
+    spark_plugs: { isNew: profile.initialWearKm.spark_plugs === 0, km: profile.initialWearKm.spark_plugs.toString() },
+  });
+
+  const handleNext = () => setStep(2);
+  const handleBack = () => setStep(1);
 
   const handleSave = () => {
-    if (!profile) return;
-    
+    const initialWearKm: Record<string, number> = {};
+    Object.keys(wear).forEach(key => {
+      initialWearKm[key] = wear[key].isNew ? 0 : (parseInt(wear[key].km) || 0);
+    });
+
     setProfile({
       ...profile,
-      model,
-      year,
+      model: form.model,
+      year: form.year,
       mileage: parseInt(mileage) || 0,
-      purchasePrice: parseInt(purchasePrice) || 0,
-      insuranceCost: parseInt(insuranceCost) || 0,
+      purchasePrice: parseInt(form.price) || 0,
+      insuranceCost: parseInt(form.insurance) || 0,
+      acquisitionDate: form.acquisitionDate,
+      isCoupé: form.model.toLowerCase().includes('coupé'),
+      initialWearKm,
     });
-    
     navigation.goBack();
   };
 
@@ -51,73 +78,96 @@ export default function EditProfileScreen() {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <ChevronLeft color={colors.textPrimary} size={28} />
           </TouchableOpacity>
-          <Text style={styles.title}>Profil Véhicule</Text>
+          <Text style={styles.title}>Modifier Profil</Text>
           <View style={{ width: 28 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <GlassCard style={styles.card}>
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Modèle (ex: 2.8i, M Roadster)</Text>
-                <TextInput 
-                  style={styles.input}
-                  value={model}
-                  onChangeText={setModel}
-                  placeholderTextColor={colors.textMuted}
-                />
-              </View>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <View style={styles.stepIndicator}>
+            <Text style={styles.subtitle}>
+              {step === 1 ? 'Informations Véhicule (1/2)' : 'Santé & Consommables (2/2)'}
+            </Text>
+          </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Année</Text>
-                <TextInput 
-                  style={styles.input}
-                  value={year}
-                  onChangeText={setYear}
+          {step === 1 ? (
+            <>
+              <GlassCard style={styles.formCard}>
+                <GlassPicker 
+                  label="Modèle" 
+                  value={form.model} 
+                  options={Z3_MODELS}
+                  onSelect={(val) => setForm({...form, model: val})}
+                  icon={Car}
+                  placeholder="Sélectionner mon moteur..."
+                />
+                <GlassPicker 
+                  label="Année" 
+                  value={form.year} 
+                  options={Z3_YEARS}
+                  onSelect={(val) => setForm({...form, year: val})}
+                  icon={Calendar}
+                  placeholder="Millésime..."
+                />
+                <InputField 
+                  label="Kilométrage actuel" 
+                  value={mileage} 
+                  onChange={(t: string) => setMileage(t)}
+                  icon={Gauge}
+                  placeholder="ex: 125000"
                   keyboardType="numeric"
-                  placeholderTextColor={colors.textMuted}
                 />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Kilométrage Actuel</Text>
-                <TextInput 
-                  style={styles.input}
-                  value={mileage}
-                  onChangeText={setMileage}
+                <InputField 
+                  label="Prix d'achat (€)" 
+                  value={form.price} 
+                  onChange={(t: string) => setForm({...form, price: t})}
+                  icon={Euro}
+                  placeholder="ex: 15000"
                   keyboardType="numeric"
-                  placeholderTextColor={colors.textMuted}
                 />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Prix d'achat (€)</Text>
-                <TextInput 
-                  style={styles.input}
-                  value={purchasePrice}
-                  onChangeText={setPurchasePrice}
+                <InputField 
+                  label="Coût Assurance Annuel (€)" 
+                  value={form.insurance} 
+                  onChange={(t: string) => setForm({...form, insurance: t})}
+                  icon={Shield}
+                  placeholder="ex: 600"
                   keyboardType="numeric"
-                  placeholderTextColor={colors.textMuted}
+                />
+              </GlassCard>
+
+              <PremiumButton 
+                title="Suivant" 
+                onPress={handleNext} 
+                style={styles.button}
+              />
+            </>
+          ) : (
+            <>
+              <Text style={styles.sectionInfo}>
+                Mettez à jour l'usure de vos consommables pour ajuster les alertes d'entretien.
+              </Text>
+              <GlassCard style={styles.formCard}>
+                <WearItem id="tires" label="Pneus" icon={Disc} wear={wear} setWear={setWear} />
+                <View style={styles.divider} />
+                <WearItem id="brakes" label="Freins" icon={Disc} wear={wear} setWear={setWear} />
+                <View style={styles.divider} />
+                <WearItem id="cooling" label="Refroidissement" icon={Thermometer} wear={wear} setWear={setWear} />
+                <View style={styles.divider} />
+                <WearItem id="spark_plugs" label="Bougies" icon={Zap} wear={wear} setWear={setWear} />
+              </GlassCard>
+
+              <View style={styles.buttonRow}>
+                <TouchableOpacity style={styles.backButtonRow} onPress={handleBack}>
+                  <ChevronLeft color={colors.textSecondary} size={24} />
+                  <Text style={styles.backText}>Retour</Text>
+                </TouchableOpacity>
+                <PremiumButton 
+                  title="Enregistrer" 
+                  onPress={handleSave} 
+                  style={styles.flexButton}
                 />
               </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Coût Assurance Annuel (€)</Text>
-                <TextInput 
-                  style={styles.input}
-                  value={insuranceCost}
-                  onChangeText={setInsuranceCost}
-                  keyboardType="numeric"
-                  placeholderTextColor={colors.textMuted}
-                />
-              </View>
-
-              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Save color="#FFF" size={20} />
-                <Text style={styles.saveButtonText}>Enregistrer les modifications</Text>
-              </TouchableOpacity>
-            </View>
-          </GlassCard>
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -133,11 +183,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.md,
   },
   backButton: {
-    padding: spacing.xs,
+    padding: spacing.sm,
   },
   title: {
     ...typography.h2,
@@ -145,43 +195,49 @@ const styles = StyleSheet.create({
   },
   scroll: {
     padding: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
-  card: {
-    padding: spacing.xl,
+  stepIndicator: {
+    marginBottom: spacing.lg,
+    alignItems: 'center',
   },
-  form: {
-    gap: spacing.lg,
-  },
-  inputGroup: {
-    gap: spacing.xs,
-  },
-  label: {
+  subtitle: {
     ...typography.label,
     color: colors.textSecondary,
+    fontSize: 14,
   },
-  input: {
-    height: 50,
-    backgroundColor: colors.surfaceHighlight,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    color: colors.textPrimary,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
+  sectionInfo: {
+    ...typography.bodySmall,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
   },
-  saveButton: {
-    backgroundColor: colors.primary,
-    height: 55,
-    borderRadius: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
+  formCard: {
+    marginBottom: spacing.xl,
+  },
+  button: {
     marginTop: spacing.md,
   },
-  saveButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  flexButton: {
+    flex: 1,
+  },
+  backButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  backText: {
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: spacing.xs,
   },
 });

@@ -156,7 +156,7 @@ export default function DashboardScreen() {
         </GlassCard>
 
         <View style={styles.statsContainer}>
-          <GlassCard style={styles.listCard}>
+          <GlassCard style={styles.listCard} variant="glass">
             <StatItem 
               label="Carburant" 
               value={`${expenses.filter(e => e.category === 'fuel').length} Pleins`} 
@@ -166,7 +166,7 @@ export default function DashboardScreen() {
             />
           </GlassCard>
           
-          <GlassCard style={styles.listCard}>
+          <GlassCard style={styles.listCard} variant="glass">
             <StatItem 
               label="Assurance" 
               value={`${profile.insuranceCost.toLocaleString()} € / an`} 

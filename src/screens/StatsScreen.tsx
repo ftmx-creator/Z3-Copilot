@@ -64,14 +64,43 @@ export default function StatsScreen() {
     { value: 300, label: 'Juin' },
   ];
 
-  const StatSummary = ({ label, value, icon: Icon, color, isCurrency = true }: any) => (
+  const { distanceInPeriod, costPerKm } = useMemo(() => {
+    const mileages = filteredExpenses
+      .filter(e => e.mileage !== undefined && e.mileage > 0)
+      .map(e => e.mileage as number)
+      .sort((a, b) => a - b);
+
+    if (mileages.length < 2) return { distanceInPeriod: 0, costPerKm: null };
+
+    const dist = mileages[mileages.length - 1] - mileages[0];
+    if (dist <= 0) return { distanceInPeriod: 0, costPerKm: null };
+
+    // Prorated insurance
+    let insurance = 0;
+    if (profile) {
+      if (filter === 'month') insurance = profile.insuranceCost / 12;
+      else if (filter === 'year') insurance = profile.insuranceCost;
+      else {
+        // For 'all', estimate years since acquisition
+        const acq = new Date(profile.acquisitionDate);
+        const now = new Date();
+        const years = Math.max(1, now.getFullYear() - acq.getFullYear());
+        insurance = profile.insuranceCost * years;
+      }
+    }
+
+    const total = totalFiltered + insurance;
+    return { distanceInPeriod: dist, costPerKm: (total / dist).toFixed(2) };
+  }, [filteredExpenses, totalFiltered, filter, profile]);
+
+  const StatSummary = ({ label, value, icon: Icon, color, isCurrency = true, customValue }: any) => (
     <View style={styles.summaryItem}>
       <View style={[styles.summaryIcon, { backgroundColor: color + '20' }]}>
         <Icon color={color} size={20} />
       </View>
       <View>
         <Text style={styles.summaryValue}>
-          {isCurrency ? `${value.toLocaleString()} €` : value}
+          {customValue ? customValue : (isCurrency ? `${value.toLocaleString()} €` : value)}
         </Text>
         <Text style={styles.summaryLabel}>{label}</Text>
       </View>
@@ -125,7 +154,10 @@ export default function StatsScreen() {
               />
               <View style={styles.legend}>
                 {data.filter(i => i.value > 0).map((item, index) => (
-                  <View key={`stat-legend-${index}`} style={styles.legendItem}>
+                  <View 
+                    {...({ key: `stat-legend-${index}` } as any)}
+                    style={styles.legendItem}
+                  >
                     <View style={[styles.legendDot, { backgroundColor: item.color }]} />
                     <Text style={styles.legendText}>{item.label}</Text>
                   </View>
@@ -180,6 +212,14 @@ export default function StatsScreen() {
               value={filter === 'year' ? (profile?.insuranceCost || 0) : Math.round((profile?.insuranceCost || 0) / 12)} 
               icon={Banknote} 
               color={colors.warning}
+            />
+          </GlassCard>
+          <GlassCard style={styles.summaryCard}>
+            <StatSummary 
+              label="Coût au Km" 
+              customValue={costPerKm ? `${costPerKm} €/km` : "--"}
+              icon={TrendingUp} 
+              color={colors.success}
             />
           </GlassCard>
         </View>
@@ -275,11 +315,12 @@ const styles = StyleSheet.create({
   },
   summaryGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
     marginBottom: spacing.xxl,
   },
   summaryCard: {
-    flex: 1,
+    width: (width - spacing.lg * 2 - spacing.sm) / 2, // Accounting for 1 gap in 2 columns
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.md,
   },

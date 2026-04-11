@@ -14,7 +14,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useVehicleStore, Expense } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
-import { Wrench, Fuel, Sparkles, MoreHorizontal, ChevronLeft, Save, Trash2 } from 'lucide-react-native';
+import { Wrench, Fuel, Sparkles, MoreHorizontal, ChevronLeft, Save, Trash2, Calendar } from 'lucide-react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 type Category = 'maintenance' | 'fuel' | 'aesthetic' | 'other';
 
@@ -31,6 +32,7 @@ export default function AddExpenseScreen() {
   const [mileage, setMileage] = useState('');
   const [category, setCategory] = useState<Category>('maintenance');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (expense) {
@@ -49,6 +51,18 @@ export default function AddExpenseScreen() {
       setDate(new Date().toISOString().split('T')[0]);
     }
   }, [expense, profile?.mileage, initialCategory]);
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setDate(selectedDate.toISOString().split('T')[0]);
+    }
+  };
+
+  const formatDateLabel = (dateString: string) => {
+    const d = new Date(dateString);
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
 
   // Auto-fill label for fuel
   useEffect(() => {
@@ -120,7 +134,7 @@ export default function AddExpenseScreen() {
             <ChevronLeft color={colors.textPrimary} size={28} />
           </TouchableOpacity>
           <Text style={styles.title}>
-            {expense ? 'Modifier d\'élément' : 'Ajouter un entretien'}
+            {expense ? 'Modifier l\'élément' : 'Ajouter un entretien'}
           </Text>
           <View style={{ width: 28 }} />
         </View>
@@ -139,28 +153,37 @@ export default function AddExpenseScreen() {
                 />
               </View>
 
-              <View style={styles.row}>
-                <View style={[styles.inputGroup, { flex: 1, marginRight: spacing.sm }]}>
-                  <Text style={styles.inputLabel}>Montant (€)</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="0.00"
-                    placeholderTextColor={colors.textMuted}
-                    keyboardType="decimal-pad"
-                    value={amount}
-                    onChangeText={setAmount}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Montant (€)</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="0.00"
+                  placeholderTextColor={colors.textMuted}
+                  keyboardType="decimal-pad"
+                  value={amount}
+                  onChangeText={setAmount}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Date de l'opération</Text>
+                <TouchableOpacity 
+                  style={styles.datePickerButton} 
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Calendar size={20} color={colors.primary} />
+                  <Text style={styles.dateText}>{formatDateLabel(date)}</Text>
+                </TouchableOpacity>
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={new Date(date)}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                    maximumDate={new Date()}
                   />
-                </View>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                  <Text style={styles.inputLabel}>Date (AAAA-MM-JJ)</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="2024-04-10"
-                    placeholderTextColor={colors.textMuted}
-                    value={date}
-                    onChangeText={setDate}
-                  />
-                </View>
+                )}
               </View>
 
               <View style={styles.inputGroup}>
@@ -281,6 +304,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  datePickerButton: {
+    height: 50,
+    backgroundColor: colors.surfaceHighlight,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  dateText: {
+    color: colors.textPrimary,
+    fontSize: 16,
   },
   row: {
     flexDirection: 'row',

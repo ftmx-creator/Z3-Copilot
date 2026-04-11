@@ -12,6 +12,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import SupportScreen from '../screens/SupportScreen';
+import AddExpenseScreen from '../screens/AddExpenseScreen';
 import { colors } from '../theme/colors';
 import { useVehicleStore } from '../store/useVehicleStore';
 
@@ -20,6 +21,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   EditProfile: undefined;
   Support: undefined;
+  AddExpense: { expense?: any, initialCategory?: any };
 };
 
 export type TabParamList = {
@@ -118,6 +120,7 @@ export default function MainNavigator() {
       <Stack.Screen name="MainTabs" component={TabNavigator} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Support" component={SupportScreen} />
+      <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
     </Stack.Navigator>
   );
 }

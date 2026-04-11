@@ -11,7 +11,6 @@ import { MAINTENANCE_SCHEMA } from '../utils/maintenanceSchema';
 
 import * as Notifications from 'expo-notifications';
 import { MileageModal } from '../components/common/MileageModal';
-import { ExpenseModal } from '../components/common/ExpenseModal';
 
 export default function DashboardScreen() {
   const navigation = useNavigation<any>();
@@ -21,8 +20,6 @@ export default function DashboardScreen() {
 
   const [mileageModalVisible, setMileageModalVisible] = React.useState(false);
   const [suggestedKms, setSuggestedKms] = React.useState(0);
-  const [expenseModalVisible, setExpenseModalVisible] = React.useState(false);
-  const [preSelectedCategory, setPreSelectedCategory] = React.useState<'maintenance' | 'fuel' | 'aesthetic' | 'other'>('maintenance');
 
   React.useEffect(() => {
     // Écouteur pour les clics sur les notifications
@@ -33,13 +30,12 @@ export default function DashboardScreen() {
         setSuggestedKms(data.suggestedKms || 0);
         setMileageModalVisible(true);
       } else if (data.type === 'fuel_add') {
-        setPreSelectedCategory('fuel');
-        setExpenseModalVisible(true);
+        navigation.navigate('AddExpense', { initialCategory: 'fuel' });
       }
     });
 
     return () => subscription.remove();
-  }, []);
+  }, [navigation]);
 
   if (!profile) return null;
 
@@ -201,12 +197,6 @@ export default function DashboardScreen() {
         visible={mileageModalVisible} 
         onClose={() => setMileageModalVisible(false)} 
         suggestedKms={suggestedKms} 
-      />
-
-      <ExpenseModal 
-        visible={expenseModalVisible} 
-        onClose={() => setExpenseModalVisible(false)} 
-        initialCategory={preSelectedCategory}
       />
     </SafeAreaView>
   );

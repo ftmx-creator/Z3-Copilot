@@ -7,10 +7,10 @@ import {
   FlatList, 
   TouchableOpacity 
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useVehicleStore, Expense } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
-import { ExpenseModal } from '../components/common/ExpenseModal';
 import { Wrench, Fuel, Sparkles, Plus, MoreHorizontal, Clock, ArrowRight } from 'lucide-react-native';
 import { MAINTENANCE_SCHEMA } from '../utils/maintenanceSchema';
 
@@ -26,10 +26,9 @@ type TimelineItem = {
 };
 
 export default function HistoryScreen() {
+  const navigation = useNavigation<any>();
   const expenses = useVehicleStore((state) => state.expenses);
   const profile = useVehicleStore((state) => state.profile);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(undefined);
 
   if (!profile) return null;
 
@@ -97,17 +96,15 @@ export default function HistoryScreen() {
     }
 
     return sorted;
-  }, [expenses, profile, profile?.mileage]);
+  }, [expenses, profile]);
 
   const openAddModal = () => {
-    setSelectedExpense(undefined);
-    setModalVisible(true);
+    navigation.navigate('AddExpense');
   };
 
   const openEditModal = (item: TimelineItem) => {
     if (item.type === 'past' && item.originalExpense) {
-      setSelectedExpense(item.originalExpense);
-      setModalVisible(true);
+      navigation.navigate('AddExpense', { expense: item.originalExpense });
     } else if (item.type === 'empty_cta') {
       openAddModal();
     }
@@ -259,11 +256,6 @@ export default function HistoryScreen() {
             index,
           })}
           onScrollToIndexFailed={() => {}}
-        />
-        <ExpenseModal 
-          visible={modalVisible} 
-          onClose={() => setModalVisible(false)} 
-          expense={selectedExpense}
         />
       </SafeAreaView>
     </>

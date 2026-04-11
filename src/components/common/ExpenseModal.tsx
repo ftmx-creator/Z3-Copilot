@@ -249,9 +249,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   container: {
+    width: '100%',
     maxHeight: '90%',
   },
   modalContent: {
+    width: '100%',
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     padding: spacing.xl,

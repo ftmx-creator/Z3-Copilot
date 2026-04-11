@@ -260,12 +260,12 @@ export default function HistoryScreen() {
           })}
           onScrollToIndexFailed={() => {}}
         />
+        <ExpenseModal 
+          visible={modalVisible} 
+          onClose={() => setModalVisible(false)} 
+          expense={selectedExpense}
+        />
       </SafeAreaView>
-      <ExpenseModal 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
-        expense={selectedExpense}
-      />
     </>
   );
 }

@@ -99,7 +99,7 @@ export default function DashboardScreen() {
   const StatItem = ({ label, value, subValue, icon: Icon, color }: any) => (
     <View style={styles.statItem}>
       <View style={[styles.iconContainer, { backgroundColor: color + '15' }]}>
-        <Icon size={28} color={color || colors.textSecondary} />
+        <Icon size={25} color={color || colors.textSecondary} />
       </View>
       <View style={styles.statContent}>
         <View>
@@ -172,33 +172,47 @@ export default function DashboardScreen() {
           </View>
         </GlassCard>
 
-        <View style={styles.statsContainer}>
-          <GlassCard 
-            style={styles.listCard} 
-            variant="glass" 
-            contentStyle={{ padding: spacing.md }}
+        <TouchableOpacity 
+          activeOpacity={0.8} 
+          style={[styles.tcoCardContainer, { marginTop: spacing.md }]} 
+          onPress={() => navigation.navigate('AddExpense', { initialCategory: 'fuel' })}
+        >
+          <LinearGradient
+            colors={['#3a3a3a', '#1a1a1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.statGradientCard}
           >
             <StatItem 
               label="Carburant" 
-              value={`${expenses.filter(e => e.category === 'fuel').length} Pleins`} 
-              subValue={consumption ? `${consumption} l/100km` : undefined}
+              value={consumption ? `${consumption} l/100km` : '--.- l/100km'} 
+              subValue={`${expenses.filter(e => e.category === 'fuel').length} Pleins`}
               icon={Fuel} 
-              color={colors.secondary}
+              color="#AAA"
             />
-          </GlassCard>
-          
-          <GlassCard 
-            style={styles.listCard} 
-            variant="glass"
-            contentStyle={{ padding: spacing.md }}
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <View style={styles.statsContainer}>
+          <TouchableOpacity 
+            activeOpacity={0.8} 
+            style={styles.tcoCardContainer} 
+            onPress={() => navigation.navigate('EditProfile')}
           >
-            <StatItem 
-              label="Assurance" 
-              value={`${profile.insuranceCost.toLocaleString()} € / an`} 
-              icon={Shield} 
-              color={colors.success}
-            />
-          </GlassCard>
+            <LinearGradient
+              colors={['#3a3a3a', '#1a1a1a']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.statGradientCard}
+            >
+              <StatItem 
+                label="Assurance" 
+                value={`${profile.insuranceCost.toLocaleString()} € / an`} 
+                icon={Shield} 
+                color="#AAA"
+              />
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity activeOpacity={0.8} style={styles.tcoCardContainer} onPress={navigateToStats}>
@@ -326,6 +340,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     gap: spacing.md,
     marginBottom: spacing.lg,
+    marginTop: spacing.sm,
   },
   listCard: {
     paddingHorizontal: 20,
@@ -406,5 +421,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     opacity: 0.8,
+  },
+  statGradientCard: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

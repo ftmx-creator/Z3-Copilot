@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpac
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
+import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin, Bell, LogOut, ChevronRight, User, ShieldCheck, Mail } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,24 +29,31 @@ export default function SettingsScreen() {
   };
 
   const SettingToggle = ({ label, description, icon: Icon, value, onValueChange }: any) => (
-    <GlassCard style={styles.settingCard}>
-      <View style={styles.settingHeader}>
-        <View style={styles.iconBox}>
-          <Icon color={colors.primary} size={22} />
+    <View style={styles.settingCardWrapper}>
+      <LinearGradient
+        colors={['#3a3a3a', '#1a1a1a']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.settingGradientCard}
+      >
+        <View style={styles.settingHeader}>
+          <View style={styles.iconBox}>
+            <Icon color={colors.primary} size={25} />
+          </View>
+          <View style={styles.settingText}>
+            <Text style={styles.settingLabel}>{label}</Text>
+            <Text style={styles.settingDesc}>{description}</Text>
+          </View>
+          <Switch
+            value={value}
+            onValueChange={onValueChange}
+            trackColor={{ false: 'rgba(255,255,255,0.1)', true: colors.primary }}
+            thumbColor={'#FFF'}
+            ios_backgroundColor={'rgba(255,255,255,0.1)'}
+          />
         </View>
-        <View style={styles.settingText}>
-          <Text style={styles.settingLabel}>{label}</Text>
-          <Text style={styles.settingDesc}>{description}</Text>
-        </View>
-        <Switch
-          value={value}
-          onValueChange={onValueChange}
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor={colors.textPrimary}
-          ios_backgroundColor={colors.border}
-        />
-      </View>
-    </GlassCard>
+      </LinearGradient>
+    </View>
   );
 
   const MenuLink = ({ label, icon: Icon, onPress, color = colors.textPrimary }: any) => (
@@ -156,8 +164,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     marginTop: spacing.lg,
   },
-  settingCard: {
+  settingCardWrapper: {
     marginBottom: spacing.md,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  settingGradientCard: {
     padding: spacing.md,
   },
   settingHeader: {
@@ -166,10 +178,12 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: colors.surfaceHighlight,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
-import { GlassCard } from '../components/common/GlassCard';
+import { LinearGradient } from 'expo-linear-gradient';
 import { PieChart, LineChart } from 'react-native-gifted-charts';
 import { TrendingUp, Wallet, Banknote, PieChart as PieIcon } from 'lucide-react-native';
 
@@ -129,20 +129,41 @@ export default function StatsScreen() {
           <FilterButton type="all" label="Tout" />
         </View>
 
-        <GlassCard style={styles.highlightCard}>
-          <StatSummary 
-            label="Coût au Kilomètre" 
-            customValue={costPerKm ? `${costPerKm} €/km` : "--"}
-            icon={TrendingUp} 
-            color={colors.success}
-          />
-        </GlassCard>
+        <TouchableOpacity activeOpacity={0.9} style={styles.tcoCardContainer}>
+          <LinearGradient
+            colors={[colors.primary, colors.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.tcoCard}
+          >
+            <View style={styles.statItem}>
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+                <TrendingUp size={28} color="#FFF" />
+              </View>
+              <View style={styles.statContent}>
+                <View>
+                  <Text style={styles.statLabel}>Coût au Kilomètre</Text>
+                  <Text style={styles.statValue}>{costPerKm ? `${costPerKm} €/km` : "--"}</Text>
+                </View>
+                <View style={styles.subValueBadge}>
+                  <Text style={styles.subValueText}>Sur {distanceInPeriod} km</Text>
+                </View>
+              </View>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
 
-        <GlassCard style={styles.chartCard}>
-          <View style={styles.chartHeader}>
-            <PieIcon size={20} color={colors.primary} />
-            <Text style={styles.chartTitle}>Répartition des Dépenses</Text>
-          </View>
+        <View style={styles.chartCardWrapper}>
+          <LinearGradient
+            colors={['#3a3a3a', '#1a1a1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.chartGradientCard}
+          >
+            <View style={styles.chartHeader}>
+              <PieIcon size={20} color="#FFF" />
+              <Text style={styles.chartTitle}>Répartition des Dépenses</Text>
+            </View>
           
           {pieData.length > 0 ? (
             <View style={styles.pieContainer}>
@@ -178,13 +199,20 @@ export default function StatsScreen() {
               <Text style={styles.emptyText}>Aucune donnée pour cette période</Text>
             </View>
           )}
-        </GlassCard>
+          </LinearGradient>
+        </View>
 
-        <GlassCard style={styles.chartCard}>
-          <View style={styles.chartHeader}>
-            <TrendingUp size={20} color={colors.success} />
-            <Text style={styles.chartTitle}>Évolution</Text>
-          </View>
+        <View style={styles.chartCardWrapper}>
+          <LinearGradient
+            colors={['#3a3a3a', '#1a1a1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.chartGradientCard}
+          >
+            <View style={styles.chartHeader}>
+              <TrendingUp size={20} color={colors.success} />
+              <Text style={styles.chartTitle}>Évolution</Text>
+            </View>
           <LineChart
             data={lineData}
             height={150}
@@ -198,31 +226,47 @@ export default function StatsScreen() {
             noOfSections={3}
             yAxisColor={colors.border}
             xAxisColor={colors.border}
-            yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }}
-            rulesColor={colors.border}
+            yAxisTextStyle={{ color: colors.textSecondary, fontSize: 10 }}
+            xAxisLabelTextStyle={{ color: '#FFF', fontSize: 10, fontWeight: '600' }}
+            rulesColor="rgba(255, 255, 255, 0.1)"
             rulesType="solid"
             hideDataPoints={false}
             dataPointsColor={colors.primary}
           />
-        </GlassCard>
+          </LinearGradient>
+        </View>
 
         <View style={styles.summaryGrid}>
-          <GlassCard style={styles.summaryCard}>
-            <StatSummary 
-              label={filter === 'year' ? "Budget Moyen / An" : "Budget Moyen / Mois"} 
-              value={filter === 'year' ? totalFiltered : Math.round(totalFiltered / 12)} 
-              icon={Wallet} 
-              color={colors.secondary}
-            />
-          </GlassCard>
-          <GlassCard style={styles.summaryCard}>
-            <StatSummary 
-              label={filter === 'year' ? "Assurance / An" : "Assurance / Mois"} 
-              value={filter === 'year' ? (profile?.insuranceCost || 0) : Math.round((profile?.insuranceCost || 0) / 12)} 
-              icon={Banknote} 
-              color={colors.warning}
-            />
-          </GlassCard>
+          <View style={styles.summaryCardWrapper}>
+            <LinearGradient
+              colors={['#3a3a3a', '#1a1a1a']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.summaryGradientCard}
+            >
+              <StatSummary 
+                label={filter === 'year' ? "Budget Moyen / An" : "Budget Moyen / Mois"} 
+                value={filter === 'year' ? totalFiltered : Math.round(totalFiltered / 12)} 
+                icon={Wallet} 
+                color={colors.secondary}
+              />
+            </LinearGradient>
+          </View>
+          <View style={styles.summaryCardWrapper}>
+            <LinearGradient
+              colors={['#3a3a3a', '#1a1a1a']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.summaryGradientCard}
+            >
+              <StatSummary 
+                label={filter === 'year' ? "Assurance / An" : "Assurance / Mois"} 
+                value={filter === 'year' ? (profile?.insuranceCost || 0) : Math.round((profile?.insuranceCost || 0) / 12)} 
+                icon={Banknote} 
+                color={colors.warning}
+              />
+            </LinearGradient>
+          </View>
         </View>
 
       </ScrollView>
@@ -269,15 +313,68 @@ const styles = StyleSheet.create({
   filterBtnTextActive: {
     color: '#FFF',
   },
-  chartCard: {
+  chartCardWrapper: {
     marginBottom: spacing.lg,
+    marginTop: spacing.md,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  chartGradientCard: {
     padding: spacing.md,
   },
-  highlightCard: {
-    marginBottom: spacing.lg,
-    padding: spacing.xl,
-    borderColor: colors.success + '40',
+  tcoCardContainer: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  tcoCard: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  iconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingRight: spacing.xs,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.7)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FFF',
+  },
+  subValueBadge: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  subValueText: {
+    fontSize: 10,
+    color: '#FFF',
+    fontWeight: '700',
   },
   chartHeader: {
     flexDirection: 'row',
@@ -323,11 +420,15 @@ const styles = StyleSheet.create({
   summaryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
+    justifyContent: 'space-between',
     marginBottom: spacing.xxl,
   },
-  summaryCard: {
-    width: (width - spacing.lg * 2 - spacing.sm) / 2, // Accounting for 1 gap in 2 columns
+  summaryCardWrapper: {
+    width: (width - spacing.lg * 2 - spacing.md) / 2,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  summaryGradientCard: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.md,
   },

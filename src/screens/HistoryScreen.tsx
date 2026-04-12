@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useVehicleStore, Expense } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Wrench, Fuel, Sparkles, Plus, MoreHorizontal, Clock, ArrowRight } from 'lucide-react-native';
 import { MAINTENANCE_SCHEMA } from '../utils/maintenanceSchema';
 
@@ -110,15 +111,17 @@ export default function HistoryScreen() {
     }
   };
 
-  const getIcon = (item: TimelineItem) => {
-    if (item.type === 'today') return <Clock size={18} color={colors.primary} />;
-    if (item.type === 'empty_cta') return <Plus size={18} color={colors.primary} />;
+  const getIcon = (item: TimelineItem, isFuture: boolean, isSolidBg: boolean) => {
+    if (item.type === 'today') return <Clock size={18} color="#FFF" />;
+    if (item.type === 'empty_cta') return <Plus size={18} color="#FFF" />;
+    
+    const solidColor = '#FFF';
     
     switch (item.category) {
-      case 'maintenance': return <Wrench size={18} color={item.type === 'future' ? colors.textMuted : colors.primary} />;
-      case 'fuel': return <Fuel size={18} color={colors.secondary} />;
-      case 'aesthetic': return <Sparkles size={18} color={colors.success} />;
-      default: return <MoreHorizontal size={18} color={colors.textSecondary} />;
+      case 'maintenance': return <Wrench size={18} color={isFuture ? colors.textMuted : solidColor} />;
+      case 'fuel': return <Fuel size={18} color={isFuture ? colors.textMuted : solidColor} />;
+      case 'aesthetic': return <Sparkles size={18} color={isFuture ? colors.textMuted : solidColor} />;
+      default: return <MoreHorizontal size={18} color={isFuture ? colors.textMuted : solidColor} />;
     }
   };
 
@@ -153,6 +156,42 @@ export default function HistoryScreen() {
     const day = dateObj.getDate();
     const month = dateObj.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase().replace('.', '');
     
+    const isSolidBg = !isFuture;
+
+    const cardContent = (
+      <View style={styles.itemHeader}>
+        <View style={[
+          styles.iconBox, 
+          isFuture && { backgroundColor: getCategoryColor(item.category, item.type) + '10' },
+          isSolidBg && { backgroundColor: 'rgba(255, 255, 255, 0.15)' }
+        ]}>
+          {getIcon(item, isFuture, isSolidBg)}
+        </View>
+        <View style={styles.itemContent}>
+          <Text style={[
+            styles.itemLabel, 
+            isFuture && styles.futureText, 
+            isSolidBg && {color: '#FFF'}
+          ]} numberOfLines={1}>
+            {item.label}
+          </Text>
+          <Text style={[
+            styles.itemCategory, 
+            isFuture && styles.futureText,
+            isSolidBg && {color: 'rgba(255, 255, 255, 0.7)'}
+          ]}>
+            {isFuture ? `Dans ${item.remainingKm?.toLocaleString()} km` : getCategoryLabel(item.category)}
+          </Text>
+        </View>
+        {item.amount && (
+          <Text style={[styles.itemAmount, isSolidBg && {color: '#FFF'}]}>{item.amount.toLocaleString()} €</Text>
+        )}
+        {(isFuture || isEmptyCta) && (
+          <ArrowRight size={16} color={isSolidBg ? '#FFF' : colors.textMuted} />
+        )}
+      </View>
+    );
+
     return (
       <View style={[styles.itemWrapper, isToday && styles.todayWrapper]}>
         <View style={styles.timelineContainer}>
@@ -189,45 +228,30 @@ export default function HistoryScreen() {
           disabled={!item.originalExpense && !isEmptyCta}
           activeOpacity={0.7}
         >
-          <GlassCard 
-            style={StyleSheet.flatten([
-              styles.itemCard, 
-              isFuture && styles.futureCard, 
-              isToday && styles.todayCard,
-              isEmptyCta && styles.emptyCtaCard
-            ])} 
-            variant={isToday || isEmptyCta ? 'surface' : 'glass'}
-          >
-            <View style={styles.itemHeader}>
-              <View style={[
-                styles.iconBox, 
-                { backgroundColor: getCategoryColor(item.category, item.type) + (isFuture ? '10' : '15') }
-              ]}>
-                {getIcon(item)}
-              </View>
-              <View style={styles.itemContent}>
-                <Text style={[
-                  styles.itemLabel, 
-                  isFuture && styles.futureText, 
-                  (isToday || isEmptyCta) && {color: '#FFF'}
-                ]} numberOfLines={1}>
-                  {item.label}
-                </Text>
-                <Text style={[styles.itemCategory, isFuture && styles.futureText]}>
-                  {isFuture ? `Dans ${item.remainingKm?.toLocaleString()} km` : getCategoryLabel(item.category)}
-                </Text>
-              </View>
-              {item.amount && (
-                <Text style={styles.itemAmount}>{item.amount.toLocaleString()} €</Text>
-              )}
-              {(isFuture || isEmptyCta) && (
-                <ArrowRight size={16} color={isToday || isEmptyCta ? '#FFF' : colors.textMuted} />
-              )}
+          {isFuture ? (
+            <View style={[styles.itemCard, styles.futureCard]}>
+              {cardContent}
             </View>
-          </GlassCard>
+          ) : (
+            <LinearGradient
+              colors={
+                isToday 
+                  ? [colors.primary, colors.primaryDark]
+                  : isEmptyCta
+                    ? [colors.secondary, '#004A7F']
+                    : ['#3a3a3a', '#1a1a1a']
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.itemCard, styles.gradientCard]}
+            >
+              {cardContent}
+            </LinearGradient>
+          )}
         </TouchableOpacity>
       </View>
     );
+
   };
 
   return (
@@ -367,22 +391,16 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     padding: spacing.md,
+    borderRadius: 20,
+  },
+  gradientCard: {
+    overflow: 'hidden',
   },
   futureCard: {
-    opacity: 0.7,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  todayCard: {
-    backgroundColor: 'rgba(230, 57, 70, 0.1)',
-    borderColor: colors.primary,
     borderWidth: 1,
-    borderStyle: 'solid',
-  },
-  emptyCtaCard: {
-    backgroundColor: 'rgba(69, 123, 157, 0.1)',
-    borderColor: colors.secondary,
-    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
     borderStyle: 'dashed',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   itemHeader: {
     flexDirection: 'row',

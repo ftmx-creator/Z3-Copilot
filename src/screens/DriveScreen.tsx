@@ -10,7 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useVehicleStore, Trip } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
-import { GlassCard } from '../components/common/GlassCard';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Plus, Clock, ArrowUpRight, Navigation, Calendar } from 'lucide-react-native';
 
 type TimelineItem = {
@@ -96,46 +96,49 @@ export default function DriveScreen() {
         </View>
 
         <View style={styles.cardContainer}>
-          <GlassCard 
-            style={StyleSheet.flatten([
-              styles.itemCard, 
-              isToday && styles.todayCard,
-            ])} 
-            variant={isToday ? 'surface' : 'glass'}
+          <LinearGradient
+            colors={
+              isToday 
+                ? [colors.primary, colors.primaryDark]
+                : ['#3a3a3a', '#1a1a1a']
+            }
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.itemCard, styles.gradientCard]}
           >
             <View style={styles.itemHeader}>
               <View style={[
                 styles.iconBox, 
-                { backgroundColor: (isToday ? colors.primary : colors.secondary) + '15' }
+                { backgroundColor: 'rgba(255, 255, 255, 0.15)' }
               ]}>
-                {isToday ? <Navigation size={18} color={colors.primary} /> : <ArrowUpRight size={18} color={colors.secondary} />}
+                {isToday ? <Navigation size={18} color="#FFF" /> : <ArrowUpRight size={18} color="#FFF" />}
               </View>
               <View style={styles.itemContent}>
                 <Text style={[
                   styles.itemLabel, 
-                  isToday && {color: '#FFF'}
+                  {color: '#FFF'}
                 ]} numberOfLines={1}>
                   {item.label}
                 </Text>
                 
                 {isToday ? (
                   <Text style={[styles.itemDetail, { color: 'rgba(255,255,255,0.7)' }]}>
-                    Kilométrage actuel : <Text style={{fontWeight: '800'}}>{profile.mileage.toLocaleString()}</Text> km
+                    Kilométrage actuel : <Text style={{fontWeight: '800', color: '#FFF'}}>{profile.mileage.toLocaleString()}</Text> km
                   </Text>
                 ) : (
-                  <Text style={styles.itemDetail}>
-                    Trajet de <Text style={{fontWeight: '700', color: colors.textPrimary}}>{item.distance}</Text> km
+                  <Text style={[styles.itemDetail, { color: 'rgba(255,255,255,0.7)' }]}>
+                    Trajet de <Text style={{fontWeight: '700', color: '#FFF'}}>{item.distance}</Text> km
                   </Text>
                 )}
               </View>
               
               {isPast && (
-                <View style={styles.mileageBadge}>
-                  <Text style={styles.badgeText}>{item.mileageAtEnd?.toLocaleString()}</Text>
+                <View style={[styles.mileageBadge, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
+                  <Text style={[styles.badgeText, { color: '#FFF' }]}>{item.mileageAtEnd?.toLocaleString()}</Text>
                 </View>
               )}
             </View>
-          </GlassCard>
+          </LinearGradient>
         </View>
       </View>
     );
@@ -264,11 +267,10 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     padding: spacing.md,
+    borderRadius: 20,
   },
-  todayCard: {
-    backgroundColor: 'rgba(230, 57, 70, 0.1)',
-    borderColor: colors.primary,
-    borderWidth: 1,
+  gradientCard: {
+    overflow: 'hidden',
   },
   itemHeader: {
     flexDirection: 'row',

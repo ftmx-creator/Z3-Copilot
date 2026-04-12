@@ -11,8 +11,8 @@ import {
   Alert
 } from 'react-native';
 import { colors, spacing, typography } from '../theme/colors';
-import { GlassCard } from '../components/common/GlassCard';
 import { PremiumButton } from '../components/common/PremiumButton';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Mail, ExternalLink, HelpCircle, Heart, Send } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -60,67 +60,88 @@ export default function SupportScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <Text style={styles.sectionTitle}>Envoyer un message</Text>
-        <GlassCard style={styles.formCard}>
-          <TextInput
-            style={styles.input}
-            placeholder="Comment pouvons-nous vous aider ?"
-            placeholderTextColor={colors.textMuted}
-            multiline
-            numberOfLines={4}
-            value={message}
-            onChangeText={setMessage}
-            textAlignVertical="top"
-          />
-          <PremiumButton 
-            title={isSending ? "Envoi en cours..." : "Envoyer"} 
-            onPress={handleSend}
-            icon={isSending ? undefined : Send}
-            style={styles.sendButton}
-          />
-        </GlassCard>
+        <View style={styles.cardWrapper}>
+          <LinearGradient
+            colors={['#3a3a3a', '#1a1a1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.formCard}
+          >
+            <TextInput
+              style={styles.input}
+              placeholder="Comment pouvons-nous vous aider ?"
+              placeholderTextColor={colors.textMuted}
+              multiline
+              numberOfLines={4}
+              value={message}
+              onChangeText={setMessage}
+              textAlignVertical="top"
+            />
+            <PremiumButton 
+              title={isSending ? "Envoi en cours..." : "Envoyer"} 
+              onPress={handleSend}
+              icon={isSending ? undefined : Send}
+              style={styles.sendButton}
+            />
+          </LinearGradient>
+        </View>
 
         <Text style={styles.sectionTitle}>Questions Fréquentes</Text>
-        <GlassCard style={styles.faqCard}>
-          <FAQItem 
-            question="Comment ajouter un entretien ?" 
-            answer="Rendez-vous dans l'onglet 'Entretien' et appuyez sur le bouton '+' en haut à droite." 
-          />
-          <View style={styles.divider} />
-          <FAQItem 
-            question="Qu'est-ce que le TCO ?" 
-            answer="Le Total Cost of Ownership représente le coût total de possession (Prix d'achat + Entretien + Carburant + Assurance)." 
-          />
-          <View style={styles.divider} />
-          <FAQItem 
-            question="Où sont stockées mes données ?" 
-            answer="Toutes vos données restent localement sur votre téléphone pour une confidentialité totale." 
-          />
-        </GlassCard>
+        <View style={styles.cardWrapper}>
+          <LinearGradient
+            colors={['#3a3a3a', '#1a1a1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.faqCard}
+          >
+            <FAQItem 
+              question="Comment ajouter un entretien ?" 
+              answer="Rendez-vous dans l'onglet 'Entretien' et appuyez sur le bouton '+' en haut à droite." 
+            />
+            <View style={styles.divider} />
+            <FAQItem 
+              question="Qu'est-ce que le TCO ?" 
+              answer="Le Total Cost of Ownership représente le coût total de possession (Prix d'achat + Entretien + Carburant + Assurance)." 
+            />
+            <View style={styles.divider} />
+            <FAQItem 
+              question="Où sont stockées mes données ?" 
+              answer="Toutes vos données restent localement sur votre téléphone pour une confidentialité totale." 
+            />
+          </LinearGradient>
+        </View>
 
         <Text style={styles.sectionTitle}>Communauté Z3</Text>
-        <GlassCard style={styles.linkCard}>
-          <TouchableOpacity 
-            style={styles.linkRow} 
-            onPress={() => handleLink('https://www.z3-france.com')}
+        <View style={styles.cardWrapper}>
+          <LinearGradient
+            colors={['#3a3a3a', '#1a1a1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.linkCard}
           >
-            <View style={styles.linkInfo}>
-              <HelpCircle color={colors.textSecondary} size={20} />
-              <Text style={styles.linkText}>Z3 Club France</Text>
-            </View>
-            <ExternalLink color={colors.textMuted} size={16} />
-          </TouchableOpacity>
-          <View style={styles.divider} />
-          <TouchableOpacity 
-            style={styles.linkRow} 
-            onPress={() => handleLink('https://www.bimmerforums.com/forum/forumdisplay.php?137-Z3-Roadster-Coupe-M-Roadster-M-Coupe-(Z3)')}
-          >
-            <View style={styles.linkInfo}>
-              <HelpCircle color={colors.textSecondary} size={20} />
-              <Text style={styles.linkText}>Bimmerforums Z3</Text>
-            </View>
-            <ExternalLink color={colors.textMuted} size={16} />
-          </TouchableOpacity>
-        </GlassCard>
+            <TouchableOpacity 
+              style={styles.linkRow} 
+              onPress={() => handleLink('https://www.z3-france.com')}
+            >
+              <View style={styles.linkInfo}>
+                <HelpCircle color={colors.textSecondary} size={20} />
+                <Text style={styles.linkText}>Z3 Club France</Text>
+              </View>
+              <ExternalLink color={colors.textMuted} size={16} />
+            </TouchableOpacity>
+            <View style={styles.divider} />
+            <TouchableOpacity 
+              style={styles.linkRow} 
+              onPress={() => handleLink('https://www.bimmerforums.com/forum/forumdisplay.php?137-Z3-Roadster-Coupe-M-Roadster-M-Coupe-(Z3)')}
+            >
+              <View style={styles.linkInfo}>
+                <HelpCircle color={colors.textSecondary} size={20} />
+                <Text style={styles.linkText}>Bimmerforums Z3</Text>
+              </View>
+              <ExternalLink color={colors.textMuted} size={16} />
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
 
         <View style={styles.credits}>
           <View style={styles.heartBox}>
@@ -162,6 +183,11 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginBottom: spacing.md,
     marginTop: spacing.lg,
+  },
+  cardWrapper: {
+    marginBottom: spacing.md,
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   contactCard: {
     padding: spacing.md,
@@ -252,7 +278,6 @@ const styles = StyleSheet.create({
   },
   formCard: {
     padding: spacing.lg,
-    marginBottom: spacing.md,
   },
   input: {
     minHeight: 120,

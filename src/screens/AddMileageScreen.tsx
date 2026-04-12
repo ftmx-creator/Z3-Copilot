@@ -73,12 +73,6 @@ export default function AddMileageScreen() {
       </View>
 
       <View style={styles.content}>
-        {/* Kilométrage actuel */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionLabel}>COMPTEUR ACTUEL</Text>
-          <Text style={styles.currentValue}>{profile?.mileage.toLocaleString()} km</Text>
-        </View>
-
         {/* Bouton d'ajout central */}
         <View style={styles.actionContainer}>
           <TouchableOpacity 
@@ -88,7 +82,6 @@ export default function AddMileageScreen() {
           >
             <Plus color="#FFF" size={40} />
           </TouchableOpacity>
-          <Text style={styles.actionPrompt}>Ajouter des kilomètres</Text>
         </View>
 
         {/* Bloc Nouveau Compteur */}
@@ -156,11 +149,13 @@ export default function AddMileageScreen() {
           />
         )}
 
-        <PremiumButton 
-          title="Enregistrer" 
-          onPress={handleSave}
-          style={styles.saveButton}
-        />
+        <View style={styles.buttonContainer}>
+          <PremiumButton 
+            title="Enregistrer" 
+            onPress={handleSave}
+            style={styles.saveButton}
+          />
+        </View>
       </View>
 
       {/* Modal Sélecteur KM */}
@@ -237,9 +232,10 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: spacing.xl,
-    gap: 30,
+    paddingBottom: spacing.xxl,
+    gap: 20,
   },
   sectionHeader: {
     alignItems: 'center',
@@ -347,8 +343,12 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontWeight: '500',
   },
-  saveButton: {
+  buttonContainer: {
     marginTop: 'auto',
+    paddingTop: spacing.xl,
+  },
+  saveButton: {
+    width: '100%',
   },
   modalOverlay: {
     flex: 1,

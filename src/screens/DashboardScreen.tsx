@@ -98,13 +98,19 @@ export default function DashboardScreen() {
 
   const StatItem = ({ label, value, subValue, icon: Icon, color }: any) => (
     <View style={styles.statItem}>
-      <Icon size={20} color={color || colors.textSecondary} />
+      <View style={[styles.iconContainer, { backgroundColor: color + '15' }]}>
+        <Icon size={28} color={color || colors.textSecondary} />
+      </View>
       <View style={styles.statContent}>
-        <Text style={styles.statLabel}>{label}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+        <View>
+          <Text style={styles.statLabel}>{label}</Text>
           <Text style={styles.statValue}>{value}</Text>
-          {subValue && <Text style={{ fontSize: 10, color: colors.textMuted }}>• {subValue}</Text>}
         </View>
+        {subValue && (
+          <View style={styles.subValueBadge}>
+            <Text style={styles.subValueText}>{subValue}</Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -112,7 +118,14 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.fixedHeader}>
-        <Text style={styles.appTitle}>Z3 <Text style={styles.appTitleLight}>Partner</Text></Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.appTitle}>Z3 <Text style={styles.appTitleLight}>Partner</Text></Text>
+          <Image 
+            source={require('../../assets/z3_profile.png')} 
+            style={styles.headerProfileImage}
+            resizeMode="contain"
+          />
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -160,7 +173,11 @@ export default function DashboardScreen() {
         </GlassCard>
 
         <View style={styles.statsContainer}>
-          <GlassCard style={styles.listCard} variant="glass">
+          <GlassCard 
+            style={styles.listCard} 
+            variant="glass" 
+            contentStyle={{ padding: spacing.md }}
+          >
             <StatItem 
               label="Carburant" 
               value={`${expenses.filter(e => e.category === 'fuel').length} Pleins`} 
@@ -170,7 +187,11 @@ export default function DashboardScreen() {
             />
           </GlassCard>
           
-          <GlassCard style={styles.listCard} variant="glass">
+          <GlassCard 
+            style={styles.listCard} 
+            variant="glass"
+            contentStyle={{ padding: spacing.md }}
+          >
             <StatItem 
               label="Assurance" 
               value={`${profile.insuranceCost.toLocaleString()} € / an`} 
@@ -219,6 +240,16 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
     backgroundColor: colors.background,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerProfileImage: {
+    width: 60,
+    height: 30,
+    opacity: 0.8,
   },
   appTitle: {
     fontSize: 28,
@@ -311,16 +342,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingRight: spacing.xs,
   },
   statLabel: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '700',
     color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
   statValue: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     color: colors.textPrimary,
+  },
+  iconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  subValueBadge: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  subValueText: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    fontWeight: '700',
   },
   tcoCardContainer: {
     borderRadius: 20,

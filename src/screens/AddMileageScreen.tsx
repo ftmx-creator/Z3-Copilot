@@ -26,7 +26,7 @@ export default function AddMileageScreen() {
   const navigation = useNavigation<any>();
   const { profile, addTrip } = useVehicleStore();
   
-  const [distance, setDistance] = useState(1);
+  const [distance, setDistance] = useState(0);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDistancePicker, setShowDistancePicker] = useState(false);

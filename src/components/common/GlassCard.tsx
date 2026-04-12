@@ -5,10 +5,11 @@ import { colors, spacing } from '../../theme/colors';
 
 interface GlassCardProps {
   style?: ViewStyle;
+  contentStyle?: ViewStyle;
   variant?: 'surface' | 'glass';
 }
 
-export const GlassCard = ({ children, style, variant = 'surface' }: PropsWithChildren<GlassCardProps>) => {
+export const GlassCard = ({ children, style, contentStyle, variant = 'surface' }: PropsWithChildren<GlassCardProps>) => {
   return (
     <View style={[styles.card, variant === 'glass' && styles.glassVariant, style]}>
       <LinearGradient
@@ -19,7 +20,7 @@ export const GlassCard = ({ children, style, variant = 'surface' }: PropsWithChi
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <View style={styles.innerContent}>
+        <View style={[styles.innerContent, contentStyle]}>
           {children}
         </View>
       </LinearGradient>

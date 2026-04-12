@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Gauge, Wrench, ScanLine, Timer, Settings } from 'lucide-react-native';
+import { Gauge, Wrench, ScanLine, Timer, Settings, Navigation } from 'lucide-react-native';
 import { View, ActivityIndicator } from 'react-native';
 
 import DashboardScreen from '../screens/DashboardScreen';
@@ -15,7 +15,6 @@ import SupportScreen from '../screens/SupportScreen';
 import AddExpenseScreen from '../screens/AddExpenseScreen';
 import AddMileageScreen from '../screens/AddMileageScreen';
 import { colors } from '../theme/colors';
-import { SteeringWheel } from '../components/icons/SteeringWheel';
 import { useVehicleStore } from '../store/useVehicleStore';
 
 export type RootStackParamList = {
@@ -79,7 +78,7 @@ function TabNavigator() {
         component={DriveScreen} 
         options={{
           tabBarLabel: 'Drive',
-          tabBarIcon: ({ color, size }) => <SteeringWheel color={color} size={size} />
+          tabBarIcon: ({ color, size }) => <Navigation color={color} size={size} />
         }}
       />
       <Tab.Screen 
@@ -105,6 +104,19 @@ function TabNavigator() {
 export default function MainNavigator() {
   const isHydrated = useVehicleStore((state) => state._hasHydrated);
   const profile = useVehicleStore((state) => state.profile);
+  const setHasHydrated = useVehicleStore((state) => state.setHasHydrated);
+
+  React.useEffect(() => {
+    // Sécurité : si l'hydratation prend plus de 1.5s, on force l'affichage
+    const timer = setTimeout(() => {
+      if (!isHydrated) {
+        console.warn('Hydration timeout: forcing display');
+        setHasHydrated(true);
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [isHydrated]);
 
   if (!isHydrated) {
     return (

@@ -13,7 +13,7 @@ import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Wrench, Fuel, Sparkles, Plus, MoreHorizontal, Clock, ArrowRight } from 'lucide-react-native';
-import { MAINTENANCE_SCHEMA } from '../utils/maintenanceSchema';
+import { getMaintenanceSchema } from '../utils/maintenanceSchema';
 
 type TimelineItem = {
   id: string;
@@ -61,22 +61,25 @@ export default function HistoryScreen() {
 
     // 3. Ajouter le futur
     const currentMileage = profile.mileage;
-    MAINTENANCE_SCHEMA.forEach(schema => {
-      const initialWear = profile.initialWearKm?.[schema.id] || 0;
+    const schema = getMaintenanceSchema(profile.model);
+    
+    schema.forEach(item => {
+      if (!item.intervalKm) return;
+      const initialWear = profile.initialWearKm?.[item.id] || 0;
       const effectiveMileage = currentMileage + initialWear;
-      const progress = effectiveMileage % schema.intervalKm;
-      const remainingKm = schema.intervalKm - progress;
+      const progress = effectiveMileage % item.intervalKm;
+      const remainingKm = item.intervalKm - progress;
       
       const daysRemaining = Math.max(0, Math.round(remainingKm / 15));
       const estimatedDate = new Date();
       estimatedDate.setDate(now.getDate() + daysRemaining);
 
       items.push({
-        id: `future-${schema.id}`,
+        id: `future-${item.id}`,
         type: 'future',
         date: estimatedDate.toISOString(),
-        label: schema.label,
-        category: 'maintenance',
+        label: item.label,
+        category: item.category,
         remainingKm,
       });
     });

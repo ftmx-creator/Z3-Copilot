@@ -18,8 +18,112 @@ import { GlassPicker } from '../components/common/GlassPicker';
 import { InputField } from '../components/common/InputField';
 import { WearItem } from '../components/common/WearItem';
 import { Z3_MODELS, Z3_YEARS } from '../constants/vehicleData';
-import { Car, Calendar, Gauge, Euro, Shield, Disc, Thermometer, Zap, ChevronLeft, Aperture } from 'lucide-react-native';
+import { 
+  Car, Calendar, Gauge, Euro, Shield, Disc, Thermometer, Zap, 
+  ChevronLeft, Aperture, Activity, Wind, Fuel, Wrench, Layers, 
+  ArrowUpDown, ZapOff, Droplets, Battery as BatteryIcon, Circle
+} from 'lucide-react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+const HEALTH_STEPS = [
+  {
+    title: 'Moteur & lubrification',
+    description: 'Fonctionnement interne du moteur et filtration.',
+    enjeu: 'Longévité moteur + performances.',
+    priority: 'Priorité élevée sur toutes les motorisations.',
+    icon: Activity,
+    priorityColor: colors.warning,
+    items: [
+      { id: 'oil', label: 'Vidange + filtre à huile', icon: Droplets },
+      { id: 'spark_plugs', label: 'Bougies d’allumage', icon: Zap },
+      { id: 'air_filter', label: 'Filtre à air', icon: Wind },
+      { id: 'fuel_filter', label: 'Filtre à essence', icon: Fuel },
+    ]
+  },
+  {
+    title: 'Système de refroidissement',
+    description: 'Point faible connu des BMW E36/E37.',
+    enjeu: 'Éviter la surchauffe moteur.',
+    priority: 'Priorité n°1 sur 6 cylindres et Z3 M.',
+    icon: Thermometer,
+    priorityColor: colors.error,
+    items: [
+      { id: 'water_pump', label: 'Pompe à eau', icon: Wrench },
+      { id: 'thermostat', label: 'Thermostat', icon: Thermometer },
+      { id: 'cooling_system', label: 'Radiateur + Vase expansion', icon: Activity },
+      { id: 'coolant', label: 'Liquide de refroidissement', icon: Droplets },
+    ]
+  },
+  {
+    title: 'Transmission & embrayage',
+    description: 'Passage de puissance aux roues.',
+    enjeu: 'Agrément de conduite + fiabilité.',
+    priority: 'Plus sollicité sur 6 cylindres et M.',
+    icon: ZapOff,
+    priorityColor: colors.warning,
+    items: [
+      { id: 'clutch', label: 'Embrayage', icon: ZapOff },
+    ]
+  },
+  {
+    title: 'Trains roulants & suspension',
+    description: 'Tenue de route et comportement.',
+    enjeu: 'Stabilité, précision de conduite.',
+    priority: 'Point faible structurel de la Z3.',
+    icon: Layers,
+    priorityColor: colors.error,
+    items: [
+      { id: 'shocks', label: 'Amortisseurs', icon: ArrowUpDown },
+      { id: 'bushings', label: 'Silentblocs', icon: Layers },
+    ]
+  },
+  {
+    title: 'Système de freinage',
+    description: 'Sécurité avant tout.',
+    enjeu: 'Sécurité.',
+    priority: 'À ne jamais négliger.',
+    icon: Disc,
+    priorityColor: colors.error,
+    items: [
+      { id: 'brake_fluid', label: 'Liquide de frein', icon: Droplets },
+      { id: 'brake_pads', label: 'Plaquettes de frein', icon: Disc },
+      { id: 'brake_discs', label: 'Disques de frein', icon: Disc },
+    ]
+  },
+  {
+    title: 'Confort & habitacle',
+    description: 'Qualité de vie à bord.',
+    enjeu: 'Confort, qualité de l’air.',
+    priority: 'Moins critique mécaniquement.',
+    icon: Wind,
+    priorityColor: colors.success,
+    items: [
+      { id: 'cabin_filter', label: 'Filtre habitacle', icon: Wind },
+    ]
+  },
+  {
+    title: 'Électricité & énergie',
+    description: 'Démarrage et alimentation.',
+    enjeu: 'Fiabilité au quotidien.',
+    priority: 'Important si voiture peu utilisée.',
+    icon: BatteryIcon,
+    priorityColor: colors.warning,
+    items: [
+      { id: 'battery', label: 'Batterie', icon: BatteryIcon },
+    ]
+  },
+  {
+    title: 'Pneumatiques',
+    description: 'Liaison au sol.',
+    enjeu: 'Sécurité + comportement routier.',
+    priority: 'Impact direct sur plaisir de conduite.',
+    icon: Circle,
+    priorityColor: colors.error,
+    items: [
+      { id: 'tires', label: 'Pneus', icon: Circle },
+    ]
+  }
+];
 
 export default function OnboardingScreen() {
   const navigation = useNavigation<any>();
@@ -36,14 +140,36 @@ export default function OnboardingScreen() {
   });
 
   const [wear, setWear] = useState<Record<string, { isNew: boolean, km: string }>>({
-    tires: { isNew: true, km: '0' },
-    brakes: { isNew: true, km: '0' },
-    cooling: { isNew: true, km: '0' },
+    oil: { isNew: true, km: '0' },
     spark_plugs: { isNew: true, km: '0' },
+    air_filter: { isNew: true, km: '0' },
+    fuel_filter: { isNew: true, km: '0' },
+    water_pump: { isNew: true, km: '0' },
+    thermostat: { isNew: true, km: '0' },
+    cooling_system: { isNew: true, km: '0' },
+    coolant: { isNew: true, km: '0' },
+    clutch: { isNew: true, km: '0' },
+    shocks: { isNew: true, km: '0' },
+    bushings: { isNew: true, km: '0' },
+    brake_fluid: { isNew: true, km: '0' },
+    brake_pads: { isNew: true, km: '0' },
+    brake_discs: { isNew: true, km: '0' },
+    cabin_filter: { isNew: true, km: '0' },
+    battery: { isNew: true, km: '0' },
+    tires: { isNew: true, km: '0' },
   });
 
-  const handleNext = () => setStep(2);
-  const handleBack = () => setStep(1);
+  const handleNext = () => {
+    if (step === 10) {
+      handleStart();
+    } else {
+      setStep(step + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 1) setStep(step - 1);
+  };
 
   const handleStart = () => {
     if (!form.model || !form.year) return;
@@ -66,6 +192,75 @@ export default function OnboardingScreen() {
     navigation.replace('MainTabs');
   };
 
+  const renderHealthStep = () => {
+    const currentHealthStep = HEALTH_STEPS[step - 2];
+    if (!currentHealthStep) return null;
+
+    return (
+      <>
+        <Text style={styles.sectionInfo}>
+          {currentHealthStep.title}
+        </Text>
+        <Text style={styles.sectionDesc}>
+          {currentHealthStep.description}
+        </Text>
+        
+        <GlassCard style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>💡 Enjeu :</Text>
+            <Text style={styles.infoValue}>{currentHealthStep.enjeu}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: currentHealthStep.priorityColor }]}>🔴 Priorité :</Text>
+            <Text style={styles.infoValue}>{currentHealthStep.priority}</Text>
+          </View>
+        </GlassCard>
+
+        <GlassCard style={styles.formCard}>
+          {currentHealthStep.items.map((item, idx) => (
+            <React.Fragment key={item.id}>
+              <WearItem 
+                id={item.id} 
+                label={item.label} 
+                icon={item.icon} 
+                wear={wear} 
+                setWear={setWear} 
+              />
+              {idx < currentHealthStep.items.length - 1 && <View style={styles.divider} />}
+            </React.Fragment>
+          ))}
+        </GlassCard>
+      </>
+    );
+  };
+
+  const renderInvestmentStep = () => (
+    <>
+      <Text style={styles.sectionTitle}>💵 Investissement</Text>
+      <Text style={styles.sectionDesc}>
+        Suivez la valeur et les coûts fixes de votre Z3.
+      </Text>
+      <GlassCard style={styles.formCard}>
+        <InputField 
+          label="Prix d'achat (€)" 
+          value={form.price} 
+          onChange={(t: string) => setForm({...form, price: t})}
+          icon={Euro}
+          placeholder="ex: 15000"
+          keyboardType="numeric"
+        />
+        <InputField 
+          label="Coût Assurance Annuel (€)" 
+          value={form.insurance} 
+          onChange={(t: string) => setForm({...form, insurance: t})}
+          icon={Shield}
+          placeholder="ex: 600"
+          keyboardType="numeric"
+        />
+      </GlassCard>
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
@@ -76,13 +271,17 @@ export default function OnboardingScreen() {
           <View style={styles.header}>
             <Aperture size={64} color={colors.primary} />
             <Text style={styles.title}>Z3 Partner</Text>
-            <Text style={styles.subtitle}>
-              {step === 1 ? 'Configurez votre véhicule' : 'Santé du véhicule'}
-            </Text>
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: `${(step / 10) * 100}%` }]} />
+              </View>
+              <Text style={styles.stepCounter}>Étape {step} / 10</Text>
+            </View>
           </View>
 
           {step === 1 ? (
             <>
+              <Text style={styles.sectionTitle}>Configurez votre véhicule</Text>
               <GlassCard style={styles.formCard}>
                 <GlassPicker 
                   label="Modèle" 
@@ -108,58 +307,27 @@ export default function OnboardingScreen() {
                   placeholder="ex: 125000"
                   keyboardType="numeric"
                 />
-                <InputField 
-                  label="Prix d'achat (€)" 
-                  value={form.price} 
-                  onChange={(t: string) => setForm({...form, price: t})}
-                  icon={Euro}
-                  placeholder="ex: 15000"
-                  keyboardType="numeric"
-                />
-                <InputField 
-                  label="Coût Assurance Annuel (€)" 
-                  value={form.insurance} 
-                  onChange={(t: string) => setForm({...form, insurance: t})}
-                  icon={Shield}
-                  placeholder="ex: 600"
-                  keyboardType="numeric"
-                />
               </GlassCard>
-
-              <PremiumButton 
-                title="Suivant" 
-                onPress={handleNext} 
-                style={styles.button}
-              />
             </>
+          ) : step === 10 ? (
+            renderInvestmentStep()
           ) : (
-            <>
-              <Text style={styles.sectionInfo}>
-                Précisez l'état actuel de vos consommables pour des prédictions précises.
-              </Text>
-              <GlassCard style={styles.formCard}>
-                <WearItem id="tires" label="Pneus" icon={Disc} wear={wear} setWear={setWear} />
-                <View style={styles.divider} />
-                <WearItem id="brakes" label="Freins" icon={Disc} wear={wear} setWear={setWear} />
-                <View style={styles.divider} />
-                <WearItem id="cooling" label="Refroidissement" icon={Thermometer} wear={wear} setWear={setWear} />
-                <View style={styles.divider} />
-                <WearItem id="spark_plugs" label="Bougies" icon={Zap} wear={wear} setWear={setWear} />
-              </GlassCard>
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-                  <ChevronLeft color={colors.textSecondary} size={24} />
-                  <Text style={styles.backText}>Retour</Text>
-                </TouchableOpacity>
-                <PremiumButton 
-                  title="Enregistrer" 
-                  onPress={handleStart} 
-                  style={styles.flexButton}
-                />
-              </View>
-            </>
+            renderHealthStep()
           )}
+
+          <View style={styles.buttonRow}>
+            {step > 1 && (
+              <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+                <ChevronLeft color={colors.textSecondary} size={24} />
+                <Text style={styles.backText}>Retour</Text>
+              </TouchableOpacity>
+            )}
+            <PremiumButton 
+              title={step === 10 ? "Terminer" : "Suivant"} 
+              onPress={handleNext} 
+              style={styles.flexButton}
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -185,28 +353,77 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginTop: spacing.md,
   },
-  subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
+  progressContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: spacing.lg,
+  },
+  progressBar: {
+    width: '60%',
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 2,
+  },
+  stepCounter: {
+    fontSize: 10,
+    color: colors.textMuted,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  sectionTitle: {
+    ...typography.h3,
+    color: colors.textPrimary,
     textAlign: 'center',
-    marginTop: spacing.xs,
+    marginBottom: spacing.xl,
   },
   sectionInfo: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
+    ...typography.h3,
+    color: colors.textPrimary,
     textAlign: 'center',
+    marginTop: spacing.sm,
+  },
+  sectionDesc: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  infoCard: {
+    backgroundColor: 'rgba(0, 102, 178, 0.05)',
+    padding: spacing.md,
     marginBottom: spacing.lg,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+    gap: 6,
+  },
+  infoLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  infoValue: {
+    fontSize: 11,
+    color: colors.textPrimary,
+    flex: 1,
   },
   formCard: {
     marginBottom: spacing.xl,
-  },
-  button: {
-    marginTop: spacing.md,
   },
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    marginTop: spacing.md,
   },
   flexButton: {
     flex: 1,

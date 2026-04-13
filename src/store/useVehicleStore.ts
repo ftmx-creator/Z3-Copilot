@@ -12,6 +12,13 @@ export interface Expense {
   mileage?: number;
 }
 
+export interface GarageInfo {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
 export interface VehicleProfile {
   model: string;
   year: string;
@@ -21,6 +28,7 @@ export interface VehicleProfile {
   isCoupé: boolean;
   insuranceCost: number;
   initialWearKm: Record<string, number>; // Usure enregistrée à l'onboarding
+  garage?: GarageInfo;
 }
 
 export interface Trip {
@@ -45,6 +53,7 @@ interface VehicleState {
   deleteExpense: (id: string) => void;
   addTrip: (trip: Omit<Trip, 'id'>) => void;
   deleteTrip: (id: string) => void;
+  setGarage: (garage: GarageInfo) => void;
   getTCO: () => number;
 }
 
@@ -96,6 +105,10 @@ export const useVehicleStore = create<VehicleState>()(
 
       deleteTrip: (id) => set((state) => ({
         trips: state.trips.filter(t => t.id !== id)
+      })),
+      
+      setGarage: (garage) => set((state) => ({
+        profile: state.profile ? { ...state.profile, garage } : null
       })),
 
       getTCO: () => {

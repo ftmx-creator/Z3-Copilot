@@ -14,6 +14,8 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import SupportScreen from '../screens/SupportScreen';
 import AddExpenseScreen from '../screens/AddExpenseScreen';
 import AddMileageScreen from '../screens/AddMileageScreen';
+import MaintenanceDetailScreen from '../screens/MaintenanceDetailScreen';
+import MyGarageScreen from '../screens/MyGarageScreen';
 import { colors } from '../theme/colors';
 import { useVehicleStore } from '../store/useVehicleStore';
 
@@ -24,6 +26,8 @@ export type RootStackParamList = {
   Support: undefined;
   AddExpense: { expense?: any, initialCategory?: any };
   AddMileage: undefined;
+  MaintenanceDetail: undefined;
+  MyGarage: undefined;
 };
 
 export type TabParamList = {
@@ -137,6 +141,8 @@ export default function MainNavigator() {
       <Stack.Screen name="Support" component={SupportScreen} />
       <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
       <Stack.Screen name="AddMileage" component={AddMileageScreen} />
+      <Stack.Screen name="MaintenanceDetail" component={MaintenanceDetailScreen} />
+      <Stack.Screen name="MyGarage" component={MyGarageScreen} />
     </Stack.Navigator>
   );
 }

@@ -7,7 +7,7 @@ import { MaintenanceGauge } from '../components/common/MaintenanceGauge';
 import { Car, Fuel, Shield, AlertTriangle, CheckCircle2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { MAINTENANCE_SCHEMA } from '../utils/maintenanceSchema';
+import { getMaintenanceSchema } from '../utils/maintenanceSchema';
 
 import * as Notifications from 'expo-notifications';
 import { MileageModal } from '../components/common/MileageModal';
@@ -41,17 +41,16 @@ export default function DashboardScreen() {
   const currentMileage = profile.mileage;
 
   // Calcul de la jauge Oil Service (Indépendante)
-  const oilSchema = MAINTENANCE_SCHEMA.find(m => m.id === 'oil')!;
-  const lastOilExpense = expenses.find(e => e.label.toLowerCase().includes('oil') || e.label.toLowerCase().includes('vidange'));
-  const oilStartMileage = lastOilExpense ? (expenses.indexOf(lastOilExpense) > -1 ? 0 : 0) : 0; // Simplifié pour démo, à affiner avec de vraies données
-  const oilProgress = (currentMileage % oilSchema.intervalKm);
+  const schema = getMaintenanceSchema(profile.model);
+  const oilSchema = schema.find(m => m.id === 'oil')!;
+  const oilProgress = (currentMileage % (oilSchema.intervalKm || 10000));
 
   // Calcul de la jauge Entretien Consolidée (Pneus, Freins, etc.)
-  const maintenanceItems = MAINTENANCE_SCHEMA.filter(m => m.id !== 'oil');
+  const maintenanceItems = schema.filter(m => m.id !== 'oil');
   
   const maintenanceStatus = maintenanceItems.map(item => {
+    if (!item.intervalKm) return null;
     const initialWear = profile.initialWearKm?.[item.id] || 0;
-    // On considère que l'usure initiale s'ajoute au kilométrage de départ "virtuel"
     const effectiveMileage = currentMileage + initialWear;
     const progress = (effectiveMileage % item.intervalKm);
     const percentage = (progress / item.intervalKm) * 100;
@@ -62,12 +61,12 @@ export default function DashboardScreen() {
       percentage,
       remaining: item.intervalKm - progress
     };
-  });
+  }).filter((i): i is any => i !== null);
 
   // On prend l'item le plus "urgent" (pourcentage le plus élevé)
-  const mostUrgent = maintenanceStatus.sort((a, b) => b.percentage - a.percentage)[0];
-
-  const isHealthy = oilProgress < (oilSchema.intervalKm * 0.8) && mostUrgent.percentage < 80;
+  const mostUrgent = maintenanceStatus.sort((a: any, b: any) => b.percentage - a.percentage)[0];
+  const oilInterval = oilSchema.intervalKm || 10000;
+  const isHealthy = oilProgress < (oilInterval * 0.8) && mostUrgent.percentage < 80;
 
   const navigateToHistory = () => {
     navigation.navigate('History');
@@ -156,19 +155,22 @@ export default function DashboardScreen() {
           <View style={styles.divider} />
 
           <View style={styles.gaugesRow}>
-            <MaintenanceGauge 
-              label="Oil Service" 
-              currentValue={oilProgress} 
-              maxValue={oilSchema.intervalKm}
-              size={110}
-            />
-            <MaintenanceGauge 
-              label={`Prochain : ${mostUrgent.label}`} 
-              currentValue={mostUrgent.progress} 
-              maxValue={mostUrgent.intervalKm}
-              size={110}
-              onPress={navigateToHistory}
-            />
+            <TouchableOpacity onPress={() => navigation.navigate('MaintenanceDetail')}>
+              <MaintenanceGauge 
+                label="Oil Service" 
+                currentValue={oilProgress} 
+                maxValue={oilInterval}
+                size={110}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('MaintenanceDetail')}>
+              <MaintenanceGauge 
+                label={`Prochain : ${mostUrgent.label}`} 
+                currentValue={mostUrgent.progress} 
+                maxValue={mostUrgent.intervalKm}
+                size={110}
+              />
+            </TouchableOpacity>
           </View>
         </GlassCard>
 

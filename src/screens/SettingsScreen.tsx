@@ -4,7 +4,7 @@ import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MapPin, Bell, LogOut, ChevronRight, User, ShieldCheck, Mail } from 'lucide-react-native';
+import { MapPin, Bell, LogOut, ChevronRight, User, ShieldCheck, Mail, Building2 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/MainNavigator';
@@ -97,6 +97,12 @@ export default function SettingsScreen() {
 
         <Text style={styles.sectionTitle}>Véhicule & Compte</Text>
         <GlassCard style={styles.menuContainer}>
+          <MenuLink 
+            label="Mon garage" 
+            icon={Building2} 
+            onPress={() => navigation.navigate('MyGarage')}
+          />
+          <View style={styles.divider} />
           <MenuLink 
             label="Modifier le profil véhicule" 
             icon={ShieldCheck} 

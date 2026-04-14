@@ -1,24 +1,27 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, Theme } from '@react-navigation/native';
 import MainNavigator from './src/navigation/MainNavigator';
 import { colors } from './src/theme/colors';
-import { useGPSSimulation } from './src/hooks/useGPSSimulation';
+import './src/services/LocationTask';
+import { useLocationTracker } from './src/hooks/useLocationTracker';
 
-const DarkTheme = {
-  ...DefaultTheme,
+const DarkTheme: Theme = {
+  dark: true,
   colors: {
     ...DefaultTheme.colors,
     background: colors.background,
     card: colors.surface,
     text: colors.textPrimary,
     primary: colors.primary,
+    border: colors.border,
+    notification: colors.primary,
   },
 };
 
 export default function App() {
-  // Activate simulations for demo (Road & Gas detection)
-  useGPSSimulation();
+  // Activate real-time tracking
+  useLocationTracker();
 
   return (
     <NavigationContainer theme={DarkTheme}>

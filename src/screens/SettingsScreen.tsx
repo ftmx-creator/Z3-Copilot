@@ -4,7 +4,8 @@ import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MapPin, Bell, LogOut, ChevronRight, User, ShieldCheck, Mail, Building2 } from 'lucide-react-native';
+import { MapPin, Bell, LogOut, ChevronRight, User, ShieldCheck, Mail, Building2, FileText } from 'lucide-react-native';
+import { generateMaintenancePDF } from '../utils/pdfGenerator';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/MainNavigator';
@@ -12,10 +13,25 @@ import { RootStackParamList } from '../navigation/MainNavigator';
 export default function SettingsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const profile = useVehicleStore((state) => state.profile);
-  const [gpsEnabled, setGpsEnabled] = useState(true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const expenses = useVehicleStore((state) => state.expenses);
+  const gpsEnabled = useVehicleStore((state) => state.gpsEnabled);
+  const setGPSEnabled = useVehicleStore((state) => state.setGPSEnabled);
+  const notificationsEnabled = useVehicleStore((state) => state.notificationsEnabled);
+  const setNotificationsEnabled = useVehicleStore((state) => state.setNotificationsEnabled);
+  const [isExporting, setIsExporting] = useState(false);
 
   if (!profile) return null;
+
+  const handleExportPDF = async () => {
+    try {
+      setIsExporting(true);
+      await generateMaintenancePDF(profile, expenses);
+    } catch (error) {
+      Alert.alert("Erreur", "Impossible de générer le document PDF.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -85,7 +101,7 @@ export default function SettingsScreen() {
           description="Détection automatique de trajets et stations service."
           icon={MapPin}
           value={gpsEnabled}
-          onValueChange={setGpsEnabled}
+          onValueChange={setGPSEnabled}
         />
         <SettingToggle 
           label="Alertes Maintenance" 
@@ -107,6 +123,12 @@ export default function SettingsScreen() {
             label="Modifier le profil véhicule" 
             icon={ShieldCheck} 
             onPress={() => navigation.navigate('EditProfile')}
+          />
+          <View style={styles.divider} />
+          <MenuLink 
+            label={isExporting ? "Génération en cours..." : "Exporter l'historique (PDF)"} 
+            icon={FileText} 
+            onPress={handleExportPDF}
           />
           <View style={styles.divider} />
           <MenuLink 

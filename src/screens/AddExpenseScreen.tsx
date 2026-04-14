@@ -32,6 +32,8 @@ export default function AddExpenseScreen() {
   const [mileage, setMileage] = useState('');
   const [category, setCategory] = useState<Category>('maintenance');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [notes, setNotes] = useState('');
+  const [garageName, setGarageName] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
@@ -42,6 +44,8 @@ export default function AddExpenseScreen() {
       setMileage(expense.mileage?.toString() || '');
       setCategory(expense.category);
       setDate(expense.date);
+      setNotes(expense.notes || '');
+      setGarageName(expense.garageName || '');
     } else {
       setLabel('');
       setAmount('');
@@ -49,6 +53,8 @@ export default function AddExpenseScreen() {
       setMileage(profile?.mileage?.toString() || '');
       setCategory(initialCategory || 'maintenance');
       setDate(new Date().toISOString().split('T')[0]);
+      setNotes('');
+      setGarageName(profile?.garage?.name || '');
     }
   }, [expense, profile?.mileage, initialCategory]);
 
@@ -82,6 +88,8 @@ export default function AddExpenseScreen() {
       date,
       liters: liters ? parseFloat(liters.replace(',', '.')) : undefined,
       mileage: mileage ? parseInt(mileage) : undefined,
+      notes: notes || undefined,
+      garageName: garageName || undefined,
     };
 
     if (expense) {
@@ -204,6 +212,30 @@ export default function AddExpenseScreen() {
                 />
               </View>
 
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Établissement / Garage</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="ex: BMW Service"
+                  placeholderTextColor={colors.textMuted}
+                  value={garageName}
+                  onChangeText={setGarageName}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Commentaires / Détails</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  placeholder="ex: Changement des filtres et vidange 5W40..."
+                  placeholderTextColor={colors.textMuted}
+                  multiline
+                  numberOfLines={3}
+                  value={notes}
+                  onChangeText={setNotes}
+                />
+              </View>
+
               {category === 'fuel' && (
                 <View style={styles.row}>
                   <View style={[styles.inputGroup, { flex: 1, marginRight: spacing.sm }]}>
@@ -310,6 +342,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  textArea: {
+    height: 80,
+    paddingTop: spacing.sm,
+    textAlignVertical: 'top',
   },
   datePickerButton: {
     height: 50,

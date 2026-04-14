@@ -45,8 +45,8 @@ export default function DashboardScreen() {
   const oilSchema = schema.find(m => m.id === 'oil')!;
   const oilProgress = (currentMileage % (oilSchema.intervalKm || 10000));
 
-  // Calcul de la jauge Entretien Consolidée (Pneus, Freins, etc.)
-  const maintenanceItems = schema.filter(m => m.id !== 'oil');
+  // Calcul de la jauge Entretien & réparation (Pneus, Freins, etc.)
+  const maintenanceItems = schema.filter(m => m.typeLabel === 'Entretien & réparation');
   
   const maintenanceStatus = maintenanceItems.map(item => {
     if (!item.intervalKm) return null;
@@ -165,7 +165,7 @@ export default function DashboardScreen() {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('MaintenanceDetail')}>
               <MaintenanceGauge 
-                label={`Prochain : ${mostUrgent.label}`} 
+                label={mostUrgent.label} 
                 currentValue={mostUrgent.progress} 
                 maxValue={mostUrgent.intervalKm}
                 size={110}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import { 
   View, 
   Text, 
@@ -24,6 +24,7 @@ import {
   ArrowUpDown, ZapOff, Droplets, Battery as BatteryIcon, Circle
 } from 'lucide-react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const HEALTH_STEPS = [
   {
@@ -138,6 +139,7 @@ export default function OnboardingScreen() {
     insurance: '600',
     acquisitionDate: new Date().toISOString().split('T')[0],
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [wear, setWear] = useState<Record<string, { isNew: boolean, km: string }>>({
     oil: { isNew: true, km: '0' },
@@ -241,6 +243,34 @@ export default function OnboardingScreen() {
         Suivez la valeur et les coûts fixes de votre Z3.
       </Text>
       <GlassCard style={styles.formCard}>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Date d'acquisition</Text>
+          <TouchableOpacity 
+            style={styles.datePickerButton} 
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Calendar size={20} color={colors.primary} />
+            <Text style={styles.dateText}>
+              {new Date(form.acquisitionDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={new Date(form.acquisitionDate)}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, selectedDate) => {
+              if (Platform.OS === 'android') setShowDatePicker(false);
+              if (selectedDate) {
+                setForm({...form, acquisitionDate: selectedDate.toISOString().split('T')[0]});
+              }
+            }}
+            maximumDate={new Date()}
+          />
+        )}
+
         <InputField 
           label="Prix d'achat (€)" 
           value={form.price} 
@@ -441,5 +471,29 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.border,
     marginVertical: spacing.xs,
+  },
+  inputGroup: {
+    marginBottom: spacing.md,
+  },
+  inputLabel: {
+    ...typography.label,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  datePickerButton: {
+    height: 50,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.sm,
+  },
+  dateText: {
+    color: colors.textPrimary,
+    fontSize: 16,
   },
 });

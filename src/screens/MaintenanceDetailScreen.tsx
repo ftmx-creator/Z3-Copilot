@@ -87,48 +87,56 @@ export default function MaintenanceDetailScreen() {
         </View>
 
         {Object.entries(categories).map(([catKey, items]) => (
-          <View key={catKey} style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {catKey === 'maintenance' ? 'ENTRETIEN MÉCANIQUE' : catKey === 'safety' ? 'SÉCURITÉ & LIAISON SOL' : 'AUTRES'}
-            </Text>
-            
-            {items.map((item) => (
-              <View key={item.id} style={styles.cardWrapper}>
-                <LinearGradient
-                  colors={['#2a2a2a', '#1a1a1a']}
-                  style={styles.card}
-                >
-                  <View style={styles.cardHeader}>
-                    <View style={styles.itemTitleRow}>
-                      <Text style={styles.itemLabel}>{item.label}</Text>
-                      <StatusIcon status={item.status} />
-                    </View>
-                    <Text style={styles.itemDetail}>{item.detail}</Text>
-                  </View>
+          <React.Fragment key={catKey}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                {catKey === 'maintenance' ? 'ENTRETIEN MÉCANIQUE' : catKey === 'safety' ? 'SÉCURITÉ & LIAISON SOL' : 'AUTRES'}
+              </Text>
+              
+              {items.map((item) => (
+                <React.Fragment key={item.id}>
+                  <View style={styles.cardWrapper}>
+                    <LinearGradient
+                      colors={['#2a2a2a', '#1a1a1a']}
+                      style={styles.card}
+                    >
+                      <View style={styles.cardHeader}>
+                        <View style={styles.itemTitleRow}>
+                          <Text style={styles.itemLabel}>{item.label}</Text>
+                          <StatusIcon status={item.status} />
+                        </View>
+                        <Text style={styles.itemDetail}>{item.detail}</Text>
+                        <View style={styles.costBadge}>
+                          <Text style={styles.costLabel}>BUDGET ESTIMÉ : </Text>
+                          <Text style={styles.costValue}>{item.estimatedCost}</Text>
+                        </View>
+                      </View>
 
-                  <View style={styles.progressContainer}>
-                    <View style={styles.progressBarBg}>
-                      <View 
-                        style={[
-                          styles.progressBarFill, 
-                          { 
-                            width: `${Math.min(100, item.percentage)}%`,
-                            backgroundColor: item.status === 'critical' ? colors.error : item.status === 'warning' ? colors.warning : colors.primary
-                          }
-                        ]} 
-                      />
-                    </View>
-                    <View style={styles.progressLabelRow}>
-                      <Text style={styles.progressText}>
-                        {item.intervalKm ? `${item.remaining.toLocaleString()} km restants` : 'Basé sur le temps'}
-                      </Text>
-                      <Text style={styles.intervalText}>Intervalle : {item.intervalKm?.toLocaleString()} km</Text>
-                    </View>
+                      <View style={styles.progressContainer}>
+                        <View style={styles.progressBarBg}>
+                          <View 
+                            style={[
+                              styles.progressBarFill, 
+                              { 
+                                width: `${Math.min(100, item.percentage)}%`,
+                                backgroundColor: item.status === 'critical' ? colors.error : item.status === 'warning' ? colors.warning : colors.primary
+                              }
+                            ]} 
+                          />
+                        </View>
+                        <View style={styles.progressLabelRow}>
+                          <Text style={styles.progressText}>
+                            {item.intervalKm ? `${item.remaining.toLocaleString()} km restants` : 'Basé sur le temps'}
+                          </Text>
+                          <Text style={styles.intervalText}>Intervalle : {item.intervalKm?.toLocaleString()} km</Text>
+                        </View>
+                      </View>
+                    </LinearGradient>
                   </View>
-                </LinearGradient>
-              </View>
-            ))}
-          </View>
+                </React.Fragment>
+              ))}
+            </View>
+          </React.Fragment>
         ))}
 
         <View style={styles.garageCTA}>
@@ -229,6 +237,30 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.textSecondary,
     fontStyle: 'italic',
+    marginBottom: spacing.xs,
+  },
+  costBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  costLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: colors.textMuted,
+    letterSpacing: 0.5,
+  },
+  costValue: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.success,
   },
   progressContainer: {
     marginTop: spacing.xs,

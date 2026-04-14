@@ -10,6 +10,8 @@ export interface Expense {
   label: string;
   liters?: number;
   mileage?: number;
+  notes?: string;
+  garageName?: string;
 }
 
 export interface GarageInfo {
@@ -44,7 +46,11 @@ interface VehicleState {
   expenses: Expense[];
   trips: Trip[];
   _hasHydrated: boolean;
+  gpsEnabled: boolean;
+  notificationsEnabled: boolean;
   setHasHydrated: (state: boolean) => void;
+  setGPSEnabled: (enabled: boolean) => void;
+  setNotificationsEnabled: (enabled: boolean) => void;
   setProfile: (profile: VehicleProfile) => void;
   updateMileage: (newMileage: number) => void;
   updateInitialWear: (key: string, km: number) => void;
@@ -64,8 +70,14 @@ export const useVehicleStore = create<VehicleState>()(
       expenses: [],
       trips: [],
       _hasHydrated: false,
+      gpsEnabled: true,
+      notificationsEnabled: true,
       
       setHasHydrated: (state) => set({ _hasHydrated: state }),
+      
+      setGPSEnabled: (enabled) => set({ gpsEnabled: enabled }),
+      
+      setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
 
       setProfile: (profile) => set({ profile }),
 

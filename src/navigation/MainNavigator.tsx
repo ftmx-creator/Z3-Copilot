@@ -15,6 +15,7 @@ import AddExpenseScreen from '../screens/AddExpenseScreen';
 import AddMileageScreen from '../screens/AddMileageScreen';
 import MaintenanceDetailScreen from '../screens/MaintenanceDetailScreen';
 import MyGarageScreen from '../screens/MyGarageScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import { colors } from '../theme/colors';
 import { useVehicleStore } from '../store/useVehicleStore';
 
@@ -26,6 +27,7 @@ export type RootStackParamList = {
   AddMileage: { suggestedKms?: number } | undefined;
   MaintenanceDetail: undefined;
   MyGarage: undefined;
+  PrivacyPolicy: undefined;
 };
 
 export type TabParamList = {
@@ -140,6 +142,7 @@ export default function MainNavigator() {
       <Stack.Screen name="AddMileage" component={AddMileageScreen} />
       <Stack.Screen name="MaintenanceDetail" component={MaintenanceDetailScreen} />
       <Stack.Screen name="MyGarage" component={MyGarageScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }

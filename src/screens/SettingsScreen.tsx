@@ -182,6 +182,12 @@ export default function SettingsScreen() {
           />
           <View style={styles.divider} />
           <MenuLink 
+            label="Confidentialité" 
+            icon={ShieldCheck} 
+            onPress={() => navigation.navigate('PrivacyPolicy')}
+          />
+          <View style={styles.divider} />
+          <MenuLink 
             label="Déconnexion" 
             icon={LogOut} 
             color={colors.error} 
@@ -190,7 +196,7 @@ export default function SettingsScreen() {
         </GlassCard>
 
         <View style={styles.footer}>
-          <Text style={styles.versionText}>Z3 Copilot v1.1.0 (Premium)</Text>
+          <Text style={styles.versionText}>Z3 Copilot v1.0.0 (Premium)</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

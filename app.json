@@ -18,7 +18,23 @@
         "NSCameraUsageDescription": "Cette application nécessite l'accès à l'appareil photo pour scanner vos factures d'entretien.",
         "NSLocationWhenInUseUsageDescription": "L'application utilise le GPS pour suivre vos trajets et recommander l'ajout de kilométrage ou de pleins d'essence.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "L'application utilise le GPS en arrière-plan pour détecter vos arrêts à la station-service.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "applePrivacyManifest": {
+          "NSPrivacyAccessedAPITypes": [
+            {
+              "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+              "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+            },
+            {
+              "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+              "NSPrivacyAccessedAPITypeReasons": ["85F4.1"]
+            },
+            {
+              "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+              "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+            }
+          ]
+        }
       }
     },
     "android": {
@@ -42,10 +58,5 @@
         }
       ]
     ],
-    "extra": {
-      "eas": {
-        "projectId": "5a52c56d-e0f1-45e0-a428-7611d60eb0c6"
-      }
-    }
   }
 }

@@ -58,6 +58,7 @@ interface VehicleState {
   updateExpense: (id: string, updates: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
   addTrip: (trip: Omit<Trip, 'id'>) => void;
+  updateTrip: (id: string, updates: Partial<Trip>) => void;
   deleteTrip: (id: string) => void;
   setGarage: (garage: GarageInfo) => void;
   getTCO: () => number;
@@ -114,6 +115,11 @@ export const useVehicleStore = create<VehicleState>()(
           profile: state.profile ? { ...state.profile, mileage: trip.mileageAtEnd } : null
         }));
       },
+
+      updateTrip: (id, updates) => set((state) => ({
+        trips: state.trips.map(t => t.id === id ? { ...t, ...updates } : t)
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      })),
 
       deleteTrip: (id) => set((state) => ({
         trips: state.trips.filter(t => t.id !== id)

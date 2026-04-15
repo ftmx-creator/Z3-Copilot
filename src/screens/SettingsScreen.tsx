@@ -122,7 +122,7 @@ export default function SettingsScreen() {
           <MenuLink 
             label="Modifier le profil véhicule" 
             icon={ShieldCheck} 
-            onPress={() => navigation.navigate('EditProfile')}
+            onPress={() => navigation.navigate('Onboarding' as any)}
           />
           <View style={styles.divider} />
           <MenuLink 

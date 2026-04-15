@@ -10,7 +10,6 @@ import DriveScreen from '../screens/DriveScreen';
 import StatsScreen from '../screens/StatsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
-import EditProfileScreen from '../screens/EditProfileScreen';
 import SupportScreen from '../screens/SupportScreen';
 import AddExpenseScreen from '../screens/AddExpenseScreen';
 import AddMileageScreen from '../screens/AddMileageScreen';
@@ -22,10 +21,9 @@ import { useVehicleStore } from '../store/useVehicleStore';
 export type RootStackParamList = {
   Onboarding: undefined;
   MainTabs: undefined;
-  EditProfile: undefined;
   Support: undefined;
   AddExpense: { expense?: any, initialCategory?: any };
-  AddMileage: undefined;
+  AddMileage: { suggestedKms?: number } | undefined;
   MaintenanceDetail: undefined;
   MyGarage: undefined;
 };
@@ -137,7 +135,6 @@ export default function MainNavigator() {
     >
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="MainTabs" component={TabNavigator} />
-      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Support" component={SupportScreen} />
       <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
       <Stack.Screen name="AddMileage" component={AddMileageScreen} />

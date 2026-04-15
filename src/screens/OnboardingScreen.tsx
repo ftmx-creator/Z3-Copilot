@@ -25,6 +25,7 @@ import {
 } from 'lucide-react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const HEALTH_STEPS = [
   {
@@ -35,7 +36,7 @@ const HEALTH_STEPS = [
     icon: Activity,
     priorityColor: colors.warning,
     items: [
-      { id: 'oil', label: 'Vidange + filtre à huile', icon: Droplets },
+      { id: 'oil', label: 'Filtre à huile', icon: Droplets },
       { id: 'spark_plugs', label: 'Bougies d’allumage', icon: Zap },
       { id: 'air_filter', label: 'Filtre à air', icon: Wind },
       { id: 'fuel_filter', label: 'Filtre à essence', icon: Fuel },
@@ -51,8 +52,8 @@ const HEALTH_STEPS = [
     items: [
       { id: 'water_pump', label: 'Pompe à eau', icon: Wrench },
       { id: 'thermostat', label: 'Thermostat', icon: Thermometer },
-      { id: 'cooling_system', label: 'Radiateur + Vase expansion', icon: Activity },
-      { id: 'coolant', label: 'Liquide de refroidissement', icon: Droplets },
+      { id: 'cooling_system', label: 'Radiateur', icon: Activity },
+      { id: 'coolant', label: 'Refroidissement', icon: Droplets },
     ]
   },
   {
@@ -121,7 +122,8 @@ const HEALTH_STEPS = [
     icon: Circle,
     priorityColor: colors.error,
     items: [
-      { id: 'tires', label: 'Pneus', icon: Circle },
+      { id: 'tires_front', label: 'Pneus AV (avant)', icon: Circle },
+      { id: 'tires_rear', label: 'Pneus AR (arrière)', icon: Circle },
     ]
   }
 ];
@@ -131,34 +133,34 @@ export default function OnboardingScreen() {
   const setProfile = useVehicleStore((state) => state.setProfile);
   const [step, setStep] = useState(1);
 
+  const currentProfile = useVehicleStore((state) => state.profile);
   const [form, setForm] = useState({
-    model: '',
-    year: '',
-    mileage: '124000',
-    price: '18500',
-    insurance: '600',
-    acquisitionDate: new Date().toISOString().split('T')[0],
+    model: currentProfile?.model || '',
+    year: currentProfile?.year || '',
+    mileage: currentProfile?.mileage.toString() || '124000',
+    price: currentProfile?.purchasePrice.toString() || '18500',
+    insurance: currentProfile?.insuranceCost.toString() || '600',
+    acquisitionDate: currentProfile?.acquisitionDate || new Date().toISOString().split('T')[0],
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [wear, setWear] = useState<Record<string, { isNew: boolean, km: string }>>({
-    oil: { isNew: true, km: '0' },
-    spark_plugs: { isNew: true, km: '0' },
-    air_filter: { isNew: true, km: '0' },
-    fuel_filter: { isNew: true, km: '0' },
-    water_pump: { isNew: true, km: '0' },
-    thermostat: { isNew: true, km: '0' },
-    cooling_system: { isNew: true, km: '0' },
-    coolant: { isNew: true, km: '0' },
-    clutch: { isNew: true, km: '0' },
-    shocks: { isNew: true, km: '0' },
-    bushings: { isNew: true, km: '0' },
-    brake_fluid: { isNew: true, km: '0' },
-    brake_pads: { isNew: true, km: '0' },
-    brake_discs: { isNew: true, km: '0' },
-    cabin_filter: { isNew: true, km: '0' },
-    battery: { isNew: true, km: '0' },
-    tires: { isNew: true, km: '0' },
+  const [wear, setWear] = useState<Record<string, { isNew: boolean, km: string }>>(() => {
+    const initialState: Record<string, { isNew: boolean, km: string }> = {};
+    const defaultKeys = [
+      'oil', 'spark_plugs', 'air_filter', 'fuel_filter', 'water_pump', 
+      'thermostat', 'cooling_system', 'coolant', 'clutch', 'shocks', 
+      'bushings', 'brake_fluid', 'brake_pads', 'brake_discs', 
+      'cabin_filter', 'battery', 'tires_front', 'tires_rear'
+    ];
+    
+    defaultKeys.forEach(key => {
+      const existingKm = currentProfile?.initialWearKm?.[key];
+      initialState[key] = {
+        isNew: existingKm === 0 || existingKm === undefined,
+        km: existingKm?.toString() || '0'
+      };
+    });
+    return initialState;
   });
 
   const handleNext = () => {
@@ -191,7 +193,12 @@ export default function OnboardingScreen() {
       isCoupé: form.model.toLowerCase().includes('coupé'),
       initialWearKm,
     });
-    navigation.replace('MainTabs');
+    
+    if (currentProfile) {
+      navigation.goBack();
+    } else {
+      navigation.replace('MainTabs');
+    }
   };
 
   const renderHealthStep = () => {
@@ -207,16 +214,23 @@ export default function OnboardingScreen() {
           {currentHealthStep.description}
         </Text>
         
-        <GlassCard style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>💡 Enjeu :</Text>
-            <Text style={styles.infoValue}>{currentHealthStep.enjeu}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: currentHealthStep.priorityColor }]}>🔴 Priorité :</Text>
-            <Text style={styles.infoValue}>{currentHealthStep.priority}</Text>
-          </View>
-        </GlassCard>
+        <View style={styles.fullBleedContainer}>
+          <LinearGradient
+            colors={['#3a3a3a', '#1a1a1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.techInfoCard}
+          >
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>💡 Enjeu :</Text>
+              <Text style={styles.infoValue}>{currentHealthStep.enjeu}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: currentHealthStep.priorityColor }]}>🔴 Priorité :</Text>
+              <Text style={styles.infoValue}>{currentHealthStep.priority}</Text>
+            </View>
+          </LinearGradient>
+        </View>
 
         <GlassCard style={styles.formCard}>
           {currentHealthStep.items.map((item, idx) => (
@@ -299,8 +313,16 @@ export default function OnboardingScreen() {
       >
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
+            {currentProfile && (
+              <TouchableOpacity 
+                style={styles.closeButton} 
+                onPress={() => navigation.goBack()}
+              >
+                <ChevronLeft color={colors.textSecondary} size={28} />
+              </TouchableOpacity>
+            )}
             <Aperture size={64} color={colors.primary} />
-            <Text style={styles.title}>Z3 Partner</Text>
+            <Text style={styles.title}>{currentProfile ? 'Modifier Profil' : 'Z3 Partner'}</Text>
             <View style={styles.progressContainer}>
               <View style={styles.progressBar}>
                 <View style={[styles.progressFill, { width: `${(step / 10) * 100}%` }]} />
@@ -383,6 +405,12 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginTop: spacing.md,
   },
+  closeButton: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    padding: spacing.md,
+  },
   progressContainer: {
     width: '100%',
     alignItems: 'center',
@@ -437,14 +465,27 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   infoLabel: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 10,
+    fontWeight: '900',
     color: colors.primary,
+    width: 75,
   },
   infoValue: {
     fontSize: 11,
-    color: colors.textPrimary,
+    color: 'rgba(255,255,255,0.9)',
     flex: 1,
+    fontWeight: '500',
+  },
+  fullBleedContainer: {
+    marginHorizontal: -spacing.xl,
+    marginBottom: spacing.lg,
+  },
+  techInfoCard: {
+    paddingVertical: spacing.md,
+    paddingLeft: spacing.lg,
+    paddingRight: spacing.xl,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
   },
   formCard: {
     marginBottom: spacing.xl,

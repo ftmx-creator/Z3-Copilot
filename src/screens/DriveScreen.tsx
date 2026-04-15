@@ -1,17 +1,22 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   SafeAreaView, 
   FlatList, 
-  TouchableOpacity 
+  TouchableOpacity,
+  Modal,
+  Alert,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useVehicleStore, Trip } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Plus, Clock, ArrowUpRight, Navigation, Calendar } from 'lucide-react-native';
+import { Plus, Clock, ArrowUpRight, Navigation, Calendar, Trash2, X, Check } from 'lucide-react-native';
 
 type TimelineItem = {
   id: string;
@@ -26,6 +31,13 @@ export default function DriveScreen() {
   const navigation = useNavigation<any>();
   const trips = useVehicleStore((state) => state.trips);
   const profile = useVehicleStore((state) => state.profile);
+  const updateTrip = useVehicleStore((state) => state.updateTrip);
+  const deleteTrip = useVehicleStore((state) => state.deleteTrip);
+
+  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editLabel, setEditLabel] = useState('');
+  const [editDistance, setEditDistance] = useState('');
 
   if (!profile) return null;
 
@@ -59,6 +71,48 @@ export default function DriveScreen() {
 
   const openAddMileage = () => {
     navigation.navigate('AddMileage');
+  };
+
+  const handleEditTrip = (id: string) => {
+    const trip = trips.find(t => t.id === id);
+    if (trip) {
+      setEditingTrip(trip);
+      setEditLabel(trip.label);
+      setEditDistance(trip.distance.toString());
+      setModalVisible(true);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (editingTrip) {
+      updateTrip(editingTrip.id, {
+        label: editLabel,
+        distance: parseInt(editDistance) || 0
+      });
+      setModalVisible(false);
+      setEditingTrip(null);
+    }
+  };
+
+  const handleDeleteTrip = () => {
+    if (editingTrip) {
+      Alert.alert(
+        "Supprimer le trajet",
+        "Voulez-vous vraiment supprimer ce trajet de l'historique ?",
+        [
+          { text: "Annuler", style: "cancel" },
+          { 
+            text: "Supprimer", 
+            style: "destructive", 
+            onPress: () => {
+              deleteTrip(editingTrip.id);
+              setModalVisible(false);
+              setEditingTrip(null);
+            }
+          }
+        ]
+      );
+    }
   };
 
   const renderItem = ({ item, index }: { item: TimelineItem; index: number }) => {
@@ -95,7 +149,12 @@ export default function DriveScreen() {
           ]} />
         </View>
 
-        <View style={styles.cardContainer}>
+        <TouchableOpacity 
+          style={styles.cardContainer} 
+          disabled={!isPast}
+          onPress={() => isPast && handleEditTrip(item.id)}
+          activeOpacity={0.7}
+        >
           <LinearGradient
             colors={
               isToday 
@@ -139,7 +198,7 @@ export default function DriveScreen() {
               )}
             </View>
           </LinearGradient>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -170,6 +229,70 @@ export default function DriveScreen() {
         })}
         onScrollToIndexFailed={() => {}}
       />
+
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Modifier le trajet</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <X color={colors.textSecondary} size={24} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalForm}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Nom du trajet</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editLabel}
+                  onChangeText={setEditLabel}
+                  placeholder="Ex: Balade dimanche"
+                  placeholderTextColor={colors.textMuted}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Distance (km)</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editDistance}
+                  onChangeText={setEditDistance}
+                  keyboardType="numeric"
+                  placeholder="Ex: 50"
+                  placeholderTextColor={colors.textMuted}
+                />
+              </View>
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.deleteButton]} 
+                onPress={handleDeleteTrip}
+              >
+                <Trash2 color={colors.error} size={20} />
+                <Text style={[styles.modalButtonText, { color: colors.error }]}>Supprimer</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.saveButton]} 
+                onPress={handleSaveEdit}
+              >
+                <Check color="#FFF" size={20} />
+                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Enregistrer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -309,5 +432,72 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: colors.textPrimary,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: spacing.xl,
+    minHeight: 400,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  modalTitle: {
+    ...typography.h2,
+    color: colors.textPrimary,
+  },
+  modalForm: {
+    gap: spacing.lg,
+  },
+  inputGroup: {
+    gap: spacing.xs,
+  },
+  inputLabel: {
+    ...typography.label,
+    color: colors.textSecondary,
+  },
+  textInput: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
+    padding: 16,
+    color: colors.textPrimary,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.xxl,
+  },
+  modalButton: {
+    flex: 1,
+    height: 56,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  deleteButton: {
+    backgroundColor: 'rgba(255, 59, 48, 0.1)',
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

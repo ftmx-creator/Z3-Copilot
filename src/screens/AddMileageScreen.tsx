@@ -10,7 +10,7 @@ import {
   Modal,
   FlatList
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { ChevronLeft, Save, Navigation, Plus, Calendar, X, Check } from 'lucide-react-native';
@@ -25,10 +25,12 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function AddMileageScreen() {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const suggestedKms = route.params?.suggestedKms;
   const { profile, addTrip } = useVehicleStore();
   
-  const [distance, setDistance] = useState(0);
-  const [label, setLabel] = useState('On the road');
+  const [distance, setDistance] = useState(suggestedKms || 0);
+  const [label, setLabel] = useState(suggestedKms ? 'Trajet auto-détecté' : 'On the road');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDistancePicker, setShowDistancePicker] = useState(false);

@@ -61,6 +61,7 @@ interface VehicleState {
   updateTrip: (id: string, updates: Partial<Trip>) => void;
   deleteTrip: (id: string) => void;
   setGarage: (garage: GarageInfo) => void;
+  restoreState: (data: any) => void;
   getTCO: () => number;
 }
 
@@ -127,6 +128,14 @@ export const useVehicleStore = create<VehicleState>()(
       
       setGarage: (garage) => set((state) => ({
         profile: state.profile ? { ...state.profile, garage } : null
+      })),
+
+      restoreState: (data) => set((state) => ({
+        profile: data.profile || state.profile,
+        expenses: data.expenses || state.expenses,
+        trips: data.trips || state.trips,
+        gpsEnabled: data.gpsEnabled ?? state.gpsEnabled,
+        notificationsEnabled: data.notificationsEnabled ?? state.notificationsEnabled,
       })),
 
       getTCO: () => {

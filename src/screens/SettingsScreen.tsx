@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { GlassCard } from '../components/common/GlassCard';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MapPin, Bell, LogOut, ChevronRight, User, ShieldCheck, Mail, Building2, FileText } from 'lucide-react-native';
+import { MapPin, Bell, LogOut, ChevronRight, User, ShieldCheck, Mail, Building2, FileText, Cloud, Download, Share2 } from 'lucide-react-native';
+import { exportData, importData } from '../services/backupService';
 import { generateMaintenancePDF } from '../utils/pdfGenerator';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -42,6 +43,28 @@ export default function SettingsScreen() {
         { text: "Déconnexion", style: "destructive", onPress: () => navigation.replace('Onboarding') }
       ]
     );
+  };
+
+  const handleGPSToggle = async (value: boolean) => {
+    if (!value) {
+      // User is disabling
+      setGPSEnabled(false);
+      Alert.alert(
+        "Auto-Log Désactivé",
+        "Le suivi automatique est maintenant désactivé dans l'application. Pour une confidentialité totale, vous pouvez également révoquer l'accès à la position dans les réglages de votre iPhone.",
+        [
+          { text: "OK", style: "default" },
+          { 
+            text: "Réglages iPhone", 
+            onPress: () => Linking.openSettings() 
+          }
+        ]
+      );
+    } else {
+      // User is enabling
+      setGPSEnabled(true);
+      // useLocationTracker will handle the permission request
+    }
   };
 
   const SettingToggle = ({ label, description, icon: Icon, value, onValueChange }: any) => (
@@ -101,7 +124,7 @@ export default function SettingsScreen() {
           description="Détection automatique de trajets et stations service."
           icon={MapPin}
           value={gpsEnabled}
-          onValueChange={setGPSEnabled}
+          onValueChange={handleGPSToggle}
         />
         <SettingToggle 
           label="Alertes Maintenance" 
@@ -110,6 +133,27 @@ export default function SettingsScreen() {
           value={notificationsEnabled}
           onValueChange={setNotificationsEnabled}
         />
+
+        <Text style={styles.sectionTitle}>Sauvegarde & Synchronisation</Text>
+        <GlassCard style={styles.menuContainer}>
+          <MenuLink 
+            label="Sauvegarder dans le Cloud" 
+            icon={Cloud} 
+            onPress={exportData}
+          />
+          <View style={styles.divider} />
+          <MenuLink 
+            label="Restaurer l'historique" 
+            icon={Download} 
+            onPress={importData}
+          />
+          <View style={styles.divider} />
+          <MenuLink 
+            label="Export de sécurité (JSON)" 
+            icon={Share2} 
+            onPress={exportData}
+          />
+        </GlassCard>
 
         <Text style={styles.sectionTitle}>Véhicule & Compte</Text>
         <GlassCard style={styles.menuContainer}>

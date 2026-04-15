@@ -12,10 +12,14 @@ export const useLocationTracker = () => {
     const manageTracking = async () => {
       // 1. Vérification si activé dans les réglages
       if (!gpsEnabled) {
-        console.log('GPS: Désactivé par l\'utilisateur, arrêt du suivi');
-        const isRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TRACKING_TASK);
-        if (isRegistered) {
-          await Location.stopLocationUpdatesAsync(LOCATION_TRACKING_TASK);
+        try {
+          const isRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TRACKING_TASK);
+          if (isRegistered) {
+            await Location.stopLocationUpdatesAsync(LOCATION_TRACKING_TASK);
+            console.log('GPS: Suivi arrêté avec succès');
+          }
+        } catch (error) {
+          console.log('GPS: Erreur lors de l\'arrêt:', error);
         }
         return;
       }

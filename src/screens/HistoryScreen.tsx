@@ -106,11 +106,13 @@ export default function HistoryScreen() {
     navigation.navigate('AddExpense');
   };
 
-  const openEditModal = (item: TimelineItem) => {
+  const handleItemPress = (item: TimelineItem) => {
     if (item.type === 'past' && item.originalExpense) {
       navigation.navigate('AddExpense', { expense: item.originalExpense });
     } else if (item.type === 'empty_cta') {
       openAddModal();
+    } else if (item.type === 'future') {
+      navigation.navigate('MaintenanceDetail');
     }
   };
 
@@ -227,8 +229,8 @@ export default function HistoryScreen() {
 
         <TouchableOpacity 
           style={styles.cardContainer} 
-          onPress={() => openEditModal(item)}
-          disabled={!item.originalExpense && !isEmptyCta}
+          onPress={() => handleItemPress(item)}
+          disabled={!item.originalExpense && !isEmptyCta && !isFuture}
           activeOpacity={0.7}
         >
           {isFuture ? (

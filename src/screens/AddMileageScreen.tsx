@@ -8,7 +8,11 @@ import {
   Dimensions,
   Platform,
   Modal,
-  FlatList
+  FlatList,
+  KeyboardAvoidingView,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useVehicleStore } from '../store/useVehicleStore';
@@ -66,99 +70,112 @@ export default function AddMileageScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeft color={colors.textPrimary} size={28} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Ajouter des KM</Text>
-        <View style={{ width: 28 }} />
-      </View>
-
-      <View style={styles.content}>
-        {/* Bouton d'ajout central */}
-        <View style={styles.actionContainer}>
-          <TouchableOpacity 
-            style={styles.plusButton} 
-            onPress={() => setShowDistancePicker(true)}
-            activeOpacity={0.8}
-          >
-            <Plus color="#FFF" size={40} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Bloc Nouveau Compteur */}
-        <View style={styles.cardWrapper}>
-          <LinearGradient
-            colors={['#3a3a3a', '#1a1a1a']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.resultCard}
-          >
-            <View style={styles.resultRow}>
-              <View>
-                <Text style={styles.resultLabel}>DISTANCE AJOUTÉE</Text>
-                <Text style={[styles.distanceValue, distance === 0 && { color: colors.textSecondary }]}>
-                  + {distance} km
-                </Text>
-              </View>
-              <Navigation size={32} color={distance > 0 ? colors.primary : colors.textMuted} />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <ChevronLeft color={colors.textPrimary} size={28} />
+              </TouchableOpacity>
+              <Text style={styles.title}>Ajouter des KM</Text>
+              <View style={{ width: 28 }} />
             </View>
-            
-            <View style={styles.divider} />
-            
-            <View style={styles.resultRow}>
-              <View>
-                <Text style={styles.resultLabel}>NOUVEAU TOTAL</Text>
-                <Text style={styles.totalValue}>
-                  {((profile?.mileage || 0) + distance).toLocaleString()} km
-                </Text>
+
+            <ScrollView 
+              contentContainerStyle={styles.content}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Bouton d'ajout central */}
+              <View style={styles.actionContainer}>
+                <TouchableOpacity 
+                  style={styles.plusButton} 
+                  onPress={() => setShowDistancePicker(true)}
+                  activeOpacity={0.8}
+                >
+                  <Plus color="#FFF" size={40} />
+                </TouchableOpacity>
               </View>
-            </View>
-          </LinearGradient>
-        </View>
 
-        {/* Titre du Trajet */}
-        <View style={styles.inputSection}>
-          <Text style={styles.sectionLabel}>TITRE DU TRAJET</Text>
-          <TextInput
-            style={styles.input}
-            value={label}
-            onChangeText={setLabel}
-            placeholder="Nom pour l'historique"
-            placeholderTextColor={colors.textMuted}
-          />
-        </View>
+              {/* Bloc Nouveau Compteur */}
+              <View style={styles.cardWrapper}>
+                <LinearGradient
+                  colors={['#3a3a3a', '#1a1a1a']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.resultCard}
+                >
+                  <View style={styles.resultRow}>
+                    <View>
+                      <Text style={styles.resultLabel}>DISTANCE AJOUTÉE</Text>
+                      <Text style={[styles.distanceValue, distance === 0 && { color: colors.textSecondary }]}>
+                        + {distance} km
+                      </Text>
+                    </View>
+                    <Navigation size={32} color={distance > 0 ? colors.primary : colors.textMuted} />
+                  </View>
+                  
+                  <View style={styles.divider} />
+                  
+                  <View style={styles.resultRow}>
+                    <View>
+                      <Text style={styles.resultLabel}>NOUVEAU TOTAL</Text>
+                      <Text style={styles.totalValue}>
+                        {((profile?.mileage || 0) + distance).toLocaleString()} km
+                      </Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </View>
 
-        {/* Sélecteur de Date */}
-        <View style={styles.inputSection}>
-          <Text style={styles.sectionLabel}>DATE DU TRAJET</Text>
-          <TouchableOpacity 
-            style={styles.dateButton} 
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Calendar size={20} color={colors.primary} />
-            <Text style={styles.dateText}>{formatDateLabel(date)}</Text>
-          </TouchableOpacity>
-        </View>
+              {/* Titre du Trajet */}
+              <View style={styles.inputSection}>
+                <Text style={styles.sectionLabel}>TITRE DU TRAJET</Text>
+                <TextInput
+                  style={styles.input}
+                  value={label}
+                  onChangeText={setLabel}
+                  placeholder="Nom pour l'historique"
+                  placeholderTextColor={colors.textMuted}
+                />
+              </View>
 
-        {showDatePicker && (
-          <DateTimePicker
-            value={new Date(date)}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onDateChange}
-            maximumDate={new Date()}
-          />
-        )}
+              {/* Sélecteur de Date */}
+              <View style={styles.inputSection}>
+                <Text style={styles.sectionLabel}>DATE DU TRAJET</Text>
+                <TouchableOpacity 
+                  style={styles.dateButton} 
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Calendar size={20} color={colors.primary} />
+                  <Text style={styles.dateText}>{formatDateLabel(date)}</Text>
+                </TouchableOpacity>
+              </View>
 
-        <View style={styles.buttonContainer}>
-          <PremiumButton 
-            title="Enregistrer" 
-            onPress={handleSave}
-            style={styles.saveButton}
-          />
-        </View>
-      </View>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={new Date(date)}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onDateChange}
+                  maximumDate={new Date()}
+                />
+              )}
+
+              <View style={styles.buttonContainer}>
+                <PremiumButton 
+                  title="Enregistrer" 
+                  onPress={handleSave}
+                  style={styles.saveButton}
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
 
       {/* Modal Sélecteur KM */}
       <Modal
@@ -234,7 +251,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   content: {
-    flexGrow: 1,
     padding: spacing.xl,
     paddingBottom: spacing.xxl,
     gap: 20,

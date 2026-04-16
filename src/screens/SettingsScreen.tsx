@@ -156,7 +156,7 @@ export default function SettingsScreen() {
           />
         </GlassCard>
 
-        <Text style={styles.sectionTitle}>Véhicule & Compte</Text>
+        <Text style={styles.sectionTitle}>Véhicule</Text>
         <GlassCard style={styles.menuContainer}>
           <MenuLink 
             label="Mon garage" 
@@ -175,7 +175,10 @@ export default function SettingsScreen() {
             icon={FileText} 
             onPress={handleExportPDF}
           />
-          <View style={styles.divider} />
+        </GlassCard>
+
+        <Text style={styles.sectionTitle}>Compte</Text>
+        <GlassCard style={styles.menuContainer}>
           <MenuLink 
             label="Soutien & Support" 
             icon={Mail} 
@@ -186,6 +189,12 @@ export default function SettingsScreen() {
             label="Confidentialité" 
             icon={ShieldCheck} 
             onPress={() => navigation.navigate('PrivacyPolicy')}
+          />
+          <View style={styles.divider} />
+          <MenuLink 
+            label="Légal" 
+            icon={FileText} 
+            onPress={() => navigation.navigate('LegalNotice' as any)}
           />
           <View style={styles.divider} />
           <MenuLink 

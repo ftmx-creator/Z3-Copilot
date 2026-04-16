@@ -31,6 +31,7 @@ export default function HistoryScreen() {
   const navigation = useNavigation<any>();
   const expenses = useVehicleStore((state) => state.expenses);
   const profile = useVehicleStore((state) => state.profile);
+  const trips = useVehicleStore((state) => state.trips);
 
   if (!profile) return null;
 
@@ -61,7 +62,9 @@ export default function HistoryScreen() {
     });
 
     // 3. Ajouter le futur
-    const dailyAvg = calculateGlobalDailyAverage(useVehicleStore.getState().trips, profile);
+    const dailyAvg = calculateGlobalDailyAverage(trips, profile);
+    const schema = getMaintenanceSchema(profile.model);
+    const currentMileage = profile.mileage;
     
     schema.forEach(item => {
       if (!item.intervalKm) return;
@@ -100,7 +103,7 @@ export default function HistoryScreen() {
     }
 
     return sorted;
-  }, [expenses, profile]);
+  }, [expenses, profile, trips]);
 
   const openAddModal = () => {
     navigation.navigate('AddExpense');

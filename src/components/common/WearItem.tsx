@@ -8,9 +8,10 @@ interface WearItemProps {
   icon: any;
   wear: Record<string, { isNew: boolean, km: string }>;
   setWear: (wear: any) => void;
+  defaultKm?: string;
 }
 
-export const WearItem = ({ id, label, icon: Icon, wear, setWear }: WearItemProps) => (
+export const WearItem = ({ id, label, icon: Icon, wear, setWear, defaultKm = '0' }: WearItemProps) => (
   <View style={styles.wearItem}>
     <View style={styles.wearHeader}>
       <View style={styles.wearLabelGroup}>
@@ -23,7 +24,14 @@ export const WearItem = ({ id, label, icon: Icon, wear, setWear }: WearItemProps
         </Text>
         <Switch 
           value={wear[id].isNew} 
-          onValueChange={(val) => setWear({ ...wear, [id]: { ...wear[id], isNew: val }})}
+          onValueChange={(val) => setWear({ 
+            ...wear, 
+            [id]: { 
+              ...wear[id], 
+              isNew: val,
+              km: !val ? defaultKm : '0'
+            }
+          })}
           trackColor={{ false: colors.border, true: colors.success }}
           thumbColor={Platform.OS === 'android' ? (wear[id].isNew ? colors.success : colors.textMuted) : undefined}
         />

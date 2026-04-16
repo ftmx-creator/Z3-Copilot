@@ -21,7 +21,7 @@ import { Z3_MODELS, Z3_YEARS } from '../constants/vehicleData';
 import { 
   Car, Calendar, Gauge, Euro, Shield, Disc, Thermometer, Zap, 
   ChevronLeft, Activity, Wind, Fuel, Wrench, Layers, 
-  ArrowUpDown, ZapOff, Droplets, Battery as BatteryIcon, Circle
+  ArrowUpDown, ZapOff, Droplets, Battery as BatteryIcon, Circle, Settings, RefreshCcw
 } from 'lucide-react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -39,6 +39,7 @@ const HEALTH_STEPS = [
       { id: 'oil', label: 'Filtre à huile', icon: Droplets },
       { id: 'spark_plugs', label: 'Bougies d’allumage', icon: Zap },
       { id: 'air_filter', label: 'Filtre à air', icon: Wind },
+      { id: 'timing', label: 'Chaîne / tendeur', icon: Settings },
       { id: 'fuel_filter', label: 'Filtre à essence', icon: Fuel },
     ]
   },
@@ -64,7 +65,11 @@ const HEALTH_STEPS = [
     icon: ZapOff,
     priorityColor: colors.warning,
     items: [
+      { id: 'gearbox_oil', label: 'Huile boîte de vitesses', icon: Settings },
+      { id: 'differential_oil', label: 'Huile différentiel', icon: Settings },
       { id: 'clutch', label: 'Embrayage', icon: ZapOff },
+      { id: 'accessory_belt', label: 'Courroie accessoires', icon: RefreshCcw },
+      { id: 'pulleys', label: 'Galets (tendeurs + enrouleurs)', icon: Circle },
     ]
   },
   {
@@ -88,8 +93,10 @@ const HEALTH_STEPS = [
     priorityColor: colors.error,
     items: [
       { id: 'brake_fluid', label: 'Liquide de frein', icon: Droplets },
-      { id: 'brake_pads', label: 'Plaquettes de frein', icon: Disc },
-      { id: 'brake_discs', label: 'Disques de frein', icon: Disc },
+      { id: 'brake_pads_front', label: 'Plaquettes de frein (AV)', icon: Disc },
+      { id: 'brake_pads_rear', label: 'Plaquettes de frein (AR)', icon: Disc },
+      { id: 'brake_discs_front', label: 'Disques de frein (AV)', icon: Disc },
+      { id: 'brake_discs_rear', label: 'Disques de frein (AR)', icon: Disc },
     ]
   },
   {
@@ -101,6 +108,7 @@ const HEALTH_STEPS = [
     priorityColor: colors.success,
     items: [
       { id: 'cabin_filter', label: 'Filtre habitacle', icon: Wind },
+      { id: 'ac_recharge', label: 'Recharge climatisation', icon: Wind },
     ]
   },
   {
@@ -147,10 +155,11 @@ export default function OnboardingScreen() {
   const [wear, setWear] = useState<Record<string, { isNew: boolean, km: string }>>(() => {
     const initialState: Record<string, { isNew: boolean, km: string }> = {};
     const defaultKeys = [
-      'oil', 'spark_plugs', 'air_filter', 'fuel_filter', 'water_pump', 
-      'thermostat', 'cooling_system', 'coolant', 'clutch', 'shocks', 
-      'bushings', 'brake_fluid', 'brake_pads', 'brake_discs', 
-      'cabin_filter', 'battery', 'tires_front', 'tires_rear'
+      'oil', 'spark_plugs', 'air_filter', 'timing', 'fuel_filter', 'water_pump', 
+      'thermostat', 'cooling_system', 'coolant', 'gearbox_oil', 'differential_oil', 
+      'clutch', 'accessory_belt', 'pulleys', 'shocks', 
+      'bushings', 'brake_fluid', 'brake_pads_front', 'brake_pads_rear', 'brake_discs_front', 'brake_discs_rear', 
+      'cabin_filter', 'ac_recharge', 'battery', 'tires_front', 'tires_rear'
     ];
     
     defaultKeys.forEach(key => {
@@ -164,7 +173,7 @@ export default function OnboardingScreen() {
   });
 
   const handleNext = () => {
-    if (step === 10) {
+    if (step === 11) {
       handleStart();
     } else {
       setStep(step + 1);
@@ -223,6 +232,7 @@ export default function OnboardingScreen() {
                 icon={item.icon} 
                 wear={wear} 
                 setWear={setWear} 
+                defaultKm={form.mileage}
               />
               {idx < currentHealthStep.items.length - 1 && <View style={styles.divider} />}
             </React.Fragment>
@@ -298,6 +308,24 @@ export default function OnboardingScreen() {
     </>
   );
 
+  const renderLegalStep = () => (
+    <>
+      <Text style={styles.sectionTitle}>⚠️ Avertissement Légal</Text>
+      <GlassCard style={styles.formCard}>
+        <Text style={styles.paragraph}>
+          Z3 Copilot est un outil d'assistance fourni à titre indicatif. 
+          Les intervalles d'entretien et les alertes générées sont basés sur des données générales.
+        </Text>
+        <Text style={[styles.paragraph, { marginTop: spacing.md }]}>
+          En continuant, vous reconnaissez que :{"\n"}
+          • Z3 Copilot ne remplace pas l'avis d'un professionnel.{"\n"}
+          • Vous restez l'unique responsable de l'entretien et de la sécurité de votre véhicule.{"\n"}
+          • L'éditeur décline toute responsabilité en cas de problème mécanique ou de sécurité.
+        </Text>
+      </GlassCard>
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
@@ -318,9 +346,9 @@ export default function OnboardingScreen() {
             <Text style={styles.title}>{currentProfile ? 'Modifier Profil' : 'Z3 Copilot'}</Text>
             <View style={styles.progressContainer}>
               <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: `${(step / 10) * 100}%` }]} />
+                <View style={[styles.progressFill, { width: `${(step / 11) * 100}%` }]} />
               </View>
-              <Text style={styles.stepCounter}>Étape {step} / 10</Text>
+              <Text style={styles.stepCounter}>Étape {step} / 11</Text>
             </View>
           </View>
 
@@ -356,6 +384,8 @@ export default function OnboardingScreen() {
             </>
           ) : step === 10 ? (
             renderInvestmentStep()
+          ) : step === 11 ? (
+            renderLegalStep()
           ) : (
             renderHealthStep()
           )}
@@ -368,7 +398,7 @@ export default function OnboardingScreen() {
               </TouchableOpacity>
             )}
             <PremiumButton 
-              title={step === 10 ? "Terminer" : "Suivant"} 
+              title={step === 11 ? "J'accepte et je termine" : "Suivant"} 
               onPress={handleNext} 
               style={styles.flexButton}
             />
@@ -444,6 +474,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.md,
+  },
+  paragraph: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
   infoCard: {
     backgroundColor: 'rgba(0, 102, 178, 0.05)',

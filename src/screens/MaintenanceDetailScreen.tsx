@@ -161,6 +161,13 @@ export default function MaintenanceDetailScreen() {
             </TouchableOpacity>
           </LinearGradient>
         </View>
+
+        <View style={styles.disclaimerContainer}>
+          <Text style={styles.disclaimerText}>
+            Les intervalles sont donnés à titre indicatif selon les plans d'entretien standards. Z3 Copilot ne se substitue pas à l'avis d'un professionnel.
+          </Text>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -324,5 +331,17 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '800',
     fontSize: 16,
+  },
+  disclaimerContainer: {
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    alignItems: 'center',
+    opacity: 0.7,
+  },
+  disclaimerText: {
+    fontSize: 10,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 14,
   },
 });

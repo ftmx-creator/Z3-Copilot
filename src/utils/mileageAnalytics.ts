@@ -70,6 +70,7 @@ export const calculatePeriodStats = (
 
   return {
     dailyAverage: periodTotal / daysInPeriod,
+    periodTotal,
     daysInPeriod
   };
 };

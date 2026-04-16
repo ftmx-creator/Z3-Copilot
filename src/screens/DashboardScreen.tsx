@@ -250,6 +250,12 @@ export default function DashboardScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
+        <View style={styles.disclaimerContainer}>
+          <Text style={styles.disclaimerText}>
+            Z3 Copilot fournit des recommandations à titre indicatif. L'entretien et la sécurité du véhicule restent sous votre entière responsabilité.
+          </Text>
+        </View>
+
       </ScrollView>
 
       <MileageModal 
@@ -447,5 +453,17 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  disclaimerContainer: {
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    alignItems: 'center',
+    opacity: 0.7,
+  },
+  disclaimerText: {
+    fontSize: 10,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 14,
   },
 });

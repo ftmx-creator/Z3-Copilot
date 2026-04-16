@@ -4,7 +4,7 @@ import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PieChart, LineChart } from 'react-native-gifted-charts';
-import { TrendingUp, Wallet, Banknote, PieChart as PieIcon, Navigation, Calendar, Droplets, Fuel } from 'lucide-react-native';
+import { TrendingUp, Wallet, Banknote, PieChart as PieIcon, Navigation, Calendar, Droplets, Fuel, Shield } from 'lucide-react-native';
 import { calculatePeriodStats, calculateBudgetForecast } from '../utils/mileageAnalytics';
 
 const { width } = Dimensions.get('window');
@@ -14,6 +14,7 @@ type FilterType = 'month' | 'year' | 'all';
 export default function StatsScreen() {
   const expenses = useVehicleStore((state) => state.expenses);
   const profile = useVehicleStore((state) => state.profile);
+  const trips = useVehicleStore((state) => state.trips);
   const getTCO = useVehicleStore((state) => state.getTCO);
   const [filter, setFilter] = useState<FilterType>('all');
 
@@ -123,19 +124,19 @@ export default function StatsScreen() {
 
   const mileageStats = useMemo(() => {
     return calculatePeriodStats(
-      useVehicleStore.getState().trips, 
+      trips, 
       filter, 
       profile?.acquisitionDate
     );
-  }, [filter, profile]);
+  }, [filter, profile, trips]);
 
   const budgetForecast = useMemo(() => {
     return calculateBudgetForecast(
-      useVehicleStore.getState().trips,
+      trips,
       profile!,
       expenses
     );
-  }, [expenses, profile]);
+  }, [expenses, profile, trips]);
 
   const StatSummary = ({ label, value, icon: Icon, color, isCurrency = true, customValue }: any) => (
     <View style={styles.summaryItem}>

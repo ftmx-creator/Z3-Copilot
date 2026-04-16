@@ -66,11 +66,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    flex: 1,
+    paddingRight: spacing.sm,
   },
   wearLabel: {
     ...typography.h3,
     fontSize: 16,
     color: colors.textPrimary,
+    flexShrink: 1,
   },
   switchGroup: {
     flexDirection: 'row',

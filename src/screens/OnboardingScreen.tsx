@@ -69,7 +69,7 @@ const HEALTH_STEPS = [
       { id: 'differential_oil', label: 'Huile différentiel', icon: Settings },
       { id: 'clutch', label: 'Embrayage', icon: ZapOff },
       { id: 'accessory_belt', label: 'Courroie accessoires', icon: RefreshCcw },
-      { id: 'pulleys', label: 'Galets (tendeurs + enrouleurs)', icon: Circle },
+      { id: 'pulleys', label: 'Galets', icon: Circle },
     ]
   },
   {
@@ -93,10 +93,10 @@ const HEALTH_STEPS = [
     priorityColor: colors.error,
     items: [
       { id: 'brake_fluid', label: 'Liquide de frein', icon: Droplets },
-      { id: 'brake_pads_front', label: 'Plaquettes de frein (AV)', icon: Disc },
-      { id: 'brake_pads_rear', label: 'Plaquettes de frein (AR)', icon: Disc },
-      { id: 'brake_discs_front', label: 'Disques de frein (AV)', icon: Disc },
-      { id: 'brake_discs_rear', label: 'Disques de frein (AR)', icon: Disc },
+      { id: 'brake_pads_front', label: 'Plaquettes (AV)', icon: Disc },
+      { id: 'brake_pads_rear', label: 'Plaquettes (AR)', icon: Disc },
+      { id: 'brake_discs_front', label: 'Disques (AV)', icon: Disc },
+      { id: 'brake_discs_rear', label: 'Disques (AR)', icon: Disc },
     ]
   },
   {
@@ -108,7 +108,7 @@ const HEALTH_STEPS = [
     priorityColor: colors.success,
     items: [
       { id: 'cabin_filter', label: 'Filtre habitacle', icon: Wind },
-      { id: 'ac_recharge', label: 'Recharge climatisation', icon: Wind },
+      { id: 'ac_recharge', label: 'Climatisation', icon: Wind },
     ]
   },
   {
@@ -405,13 +405,14 @@ export default function OnboardingScreen() {
             {step > 1 && (
               <TouchableOpacity style={styles.backButton} onPress={handleBack}>
                 <ChevronLeft color={colors.textSecondary} size={24} />
-                <Text style={styles.backText}>Retour</Text>
+                {step !== 11 && <Text style={styles.backText}>Retour</Text>}
               </TouchableOpacity>
             )}
             <PremiumButton 
               title={step === 11 ? "J'accepte et je termine" : "Suivant"} 
               onPress={handleNext} 
               style={styles.flexButton}
+              textStyle={step === 11 ? { fontSize: 16 } : undefined}
             />
           </View>
         </ScrollView>

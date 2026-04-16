@@ -18,7 +18,6 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { colors, spacing, typography } from '../theme/colors';
 import { ChevronLeft, Save, Navigation, Plus, Calendar, X, Check } from 'lucide-react-native';
-import { PremiumButton } from '../components/common/PremiumButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { TextInput } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';

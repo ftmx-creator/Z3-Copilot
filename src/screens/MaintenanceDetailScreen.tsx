@@ -27,17 +27,20 @@ export default function MaintenanceDetailScreen() {
   const SCHEMA = getMaintenanceSchema(profile.model);
   const engineType = getEngineType(profile.model);
 
+  // Base commune : km parcourus depuis la dernière sauvegarde du profil
+  const baseMileage = profile.profileLastSavedMileage || currentMileage;
+  const drivenSinceSave = Math.max(0, currentMileage - baseMileage);
+
   const maintenanceStatus = SCHEMA.map(item => {
     const initialWear = profile.initialWearKm?.[item.id] || 0;
-    const effectiveMileage = currentMileage + initialWear;
+    const usage = initialWear + drivenSinceSave;
     
     let percentage = 0;
     let remaining = 0;
 
     if (item.intervalKm) {
-      const progress = (effectiveMileage % item.intervalKm);
-      percentage = (progress / item.intervalKm) * 100;
-      remaining = item.intervalKm - progress;
+      percentage = (usage / item.intervalKm) * 100;
+      remaining = item.intervalKm - usage;
     }
 
     return {

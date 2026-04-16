@@ -106,18 +106,19 @@ export const calculateBudgetForecast = (
   
   // 1. Maintenance estimation
   const currentMileage = profile.mileage;
+  const baseMileage = profile.profileLastSavedMileage || currentMileage;
+  const drivenSinceSave = Math.max(0, currentMileage - baseMileage);
   const schema = getMaintenanceSchema(profile.model);
   let maintenanceCost = 0;
 
   schema.forEach(item => {
     if (!item.intervalKm) return;
     const initialWear = profile.initialWearKm?.[item.id] || 0;
-    const effectiveMileage = currentMileage + initialWear;
-    const progress = effectiveMileage % item.intervalKm;
-    const remainingKm = item.intervalKm - progress;
+    const usage = initialWear + drivenSinceSave;
+    const remainingKm = item.intervalKm - usage;
 
     // Si l'entretien tombe dans la période choisie
-    if (remainingKm <= forecastDistance) {
+    if (remainingKm <= forecastDistance && remainingKm > 0) {
       maintenanceCost += parseAverageCost(item.estimatedCost);
     }
   });
